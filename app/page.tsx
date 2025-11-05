@@ -2,20 +2,19 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/providers/auth-provider"
+import { useAuthStore } from "@/lib/store/auth"
 import { Loader2 } from "lucide-react"
 
 export default function Home() {
   const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuth()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const isLoading = useAuthStore((state) => state.isLoading)
 
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        // Si está autenticado, redirigir al dashboard
         router.push("/dashboard")
       } else {
-        // Si no está autenticado, redirigir al login
         router.push("/login")
       }
     }

@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input"
 import { LogIn, Eye, EyeOff, Package, AlertCircle, ShieldCheck, BarChart3, TrendingUp } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import { useAuthStore } from "@/lib/store/auth"
 
-// Login validation schema
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required").min(3, "Username must be at least 3 characters"),
   password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters"),
@@ -19,19 +19,13 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>
 
-// Hardcoded demo credentials
-const DEMO_CREDENTIALS = {
-  admin: { username: "admin", password: "admin123" },
-  manager: { username: "manager", password: "manager123" },
-  staff: { username: "staff", password: "staff123" },
-  viewer: { username: "viewer", password: "viewer123" },
-}
-
 export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const login = useAuthStore((state) => state.login)
+  const error = useAuthStore((state) => state.error)
+  const isLoading = useAuthStore((state) => state.isLoading)
+  const clearError = useAuthStore((state) => state.clearError)
 
   const {
     register,
@@ -42,41 +36,13 @@ export default function LoginPage() {
   })
 
   const onSubmit = async (data: LoginFormData) => {
-    setError(null)
-    setIsLoading(true)
-
+    clearError()
+    
     try {
-      // Simulate API call with delay
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Check credentials against demo accounts
-      let userRole: string | null = null
-      for (const [role, creds] of Object.entries(DEMO_CREDENTIALS)) {
-        if (creds.username === data.username && creds.password === data.password) {
-          userRole = role
-          break
-        }
-      }
-
-      if (!userRole) {
-        setError("Invalid username or password")
-        setIsLoading(false)
-        return
-      }
-
-      // Store auth token in localStorage (in production, use secure httpOnly cookies)
-      const authToken = btoa(JSON.stringify({ username: data.username, role: userRole, timestamp: Date.now() }))
-      localStorage.setItem("auth_token", authToken)
-      localStorage.setItem("user_role", userRole)
-      localStorage.setItem("username", data.username)
-
-      // Redirect to dashboard
+      await login(data)
       router.push("/dashboard")
-      router.refresh()
     } catch (err) {
-      setError("An error occurred during login. Please try again.")
-    } finally {
-      setIsLoading(false)
+      console.error("Login failed:", err)
     }
   }
 

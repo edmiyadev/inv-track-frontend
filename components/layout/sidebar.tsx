@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
-import { useAuth } from "@/components/providers/auth-provider"
+import { useAuthStore } from "@/lib/store/auth"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,8 @@ const navigation = [
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  const { user, logout } = useAuth()
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
 
   const userInitial = user?.username?.charAt(0)?.toUpperCase() || "U"
   const roleLabel = user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"
