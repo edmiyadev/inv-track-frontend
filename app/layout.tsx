@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/providers/theme-provider"
+import { QueryProvider } from "@/components/providers/query-provider"
 import { Suspense } from "react"
 import { AuthInitializer } from "@/components/auth/auth-initializer"
 
@@ -23,9 +24,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>
-          <ThemeProvider defaultTheme="dark" storageKey="inventory-theme">
-            <AuthInitializer>{children}</AuthInitializer>
-          </ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider defaultTheme="dark" storageKey="inventory-theme">
+              <AuthInitializer>{children}</AuthInitializer>
+            </ThemeProvider>
+          </QueryProvider>
         </Suspense>
         <Analytics />
       </body>

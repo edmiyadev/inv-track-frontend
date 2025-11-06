@@ -7,9 +7,9 @@ import type {
 } from './types'
 
 export const productsApi = {
-  // Obtener todos los productos
-  getAll: async (token: string): Promise<ProductsResponse> => {
-    return apiClient.get<ProductsResponse>('/products', token)
+  // Obtener todos los productos con paginación
+  getAll: async (token: string, page: number = 1, perPage: number = 10): Promise<ProductsResponse> => {
+    return apiClient.get<ProductsResponse>(`/products?page=${page}&per_page=${perPage}`, token)
   },
 
   // Obtener un producto por ID
