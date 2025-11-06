@@ -9,18 +9,18 @@ export default function ProductsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Products"
-        description="Manage your product catalog and inventory items"
+        title="Productos"
+        description="Gestiona tu catálogo de productos y artículos de inventario"
         actions={
           <div className="flex gap-2">
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
-              Export
+              Exportar
             </Button>
             <Button asChild>
               <Link href="/dashboard/products/new">
                 <Plus className="mr-2 h-4 w-4" />
-                Add Product
+                Agregar Producto
               </Link>
             </Button>
           </div>

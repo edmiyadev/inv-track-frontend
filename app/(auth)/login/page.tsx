@@ -13,8 +13,8 @@ import { Badge } from "@/components/ui/badge"
 import { useAuthStore } from "@/lib/store/auth"
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required").min(3, "Username must be at least 3 characters"),
-  password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters"),
+  username: z.string().min(1, "El nombre de usuario es requerido").min(3, "El nombre de usuario debe tener al menos 3 caracteres"),
+  password: z.string().min(1, "La contraseña es requerida").min(6, "La contraseña debe tener al menos 6 caracteres"),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -63,17 +63,17 @@ export default function LoginPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">InvTrack</h1>
-              <p className="text-sm text-primary-foreground/80">Inventory Management</p>
+              <p className="text-sm text-primary-foreground/80">Gestión de Inventario</p>
             </div>
           </div>
 
           <div className="space-y-6">
             <div>
               <h2 className="text-3xl font-bold mb-4">
-                Streamline Your Inventory Management
+                Optimiza la Gestión de tu Inventario
               </h2>
               <p className="text-lg text-primary-foreground/90">
-                Powerful tools to track, manage, and optimize your inventory operations with real-time insights.
+                Herramientas poderosas para rastrear, gestionar y optimizar tus operaciones de inventario con información en tiempo real.
               </p>
             </div>
 
@@ -83,9 +83,9 @@ export default function LoginPage() {
                   <BarChart3 className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Real-time Analytics</h3>
+                  <h3 className="font-semibold mb-1">Análisis en Tiempo Real</h3>
                   <p className="text-sm text-primary-foreground/80">
-                    Monitor stock levels and trends with live dashboards
+                    Monitorea niveles de stock y tendencias con tableros en vivo
                   </p>
                 </div>
               </div>
@@ -95,9 +95,9 @@ export default function LoginPage() {
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Secure & Reliable</h3>
+                  <h3 className="font-semibold mb-1">Seguro y Confiable</h3>
                   <p className="text-sm text-primary-foreground/80">
-                    Enterprise-grade security for your business data
+                    Seguridad de nivel empresarial para los datos de tu negocio
                   </p>
                 </div>
               </div>
@@ -107,9 +107,9 @@ export default function LoginPage() {
                   <TrendingUp className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Boost Efficiency</h3>
+                  <h3 className="font-semibold mb-1">Aumenta la Eficiencia</h3>
                   <p className="text-sm text-primary-foreground/80">
-                    Automate workflows and reduce manual processes
+                    Automatiza flujos de trabajo y reduce procesos manuales
                   </p>
                 </div>
               </div>
@@ -119,7 +119,7 @@ export default function LoginPage() {
 
         <div className="relative z-10">
           <p className="text-sm text-primary-foreground/70">
-            © 2025 InvTrack. All rights reserved.
+            © 2025 InvTrack. Todos los derechos reservados.
           </p>
         </div>
       </div>
@@ -135,13 +135,13 @@ export default function LoginPage() {
               </div>
             </div>
             <h1 className="text-2xl font-bold">InvTrack</h1>
-            <p className="text-muted-foreground">Inventory Management System</p>
+            <p className="text-muted-foreground">Sistema de Gestión de Inventario</p>
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Bienvenido de nuevo</h2>
             <p className="text-muted-foreground">
-              Enter your credentials to access your account
+              Ingresa tus credenciales para acceder a tu cuenta
             </p>
           </div>
 
@@ -156,11 +156,11 @@ export default function LoginPage() {
             {/* Username Field */}
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Username
+                Usuario
               </label>
               <Input
                 id="username"
-                placeholder="Enter your username"
+                placeholder="Ingresa tu nombre de usuario"
                 {...register("username")}
                 disabled={isLoading}
                 autoComplete="username"
@@ -176,13 +176,13 @@ export default function LoginPage() {
             {/* Password Field */}
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Password
+                Contraseña
               </label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="Ingresa tu contraseña"
                   {...register("password")}
                   disabled={isLoading}
                   autoComplete="current-password"
@@ -216,25 +216,25 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2" />
-                  Signing in...
+                  Iniciando sesión...
                 </>
               ) : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />
-                  Sign In
+                  Iniciar Sesión
                 </>
               )}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            By signing in, you agree to our{" "}
+            Al iniciar sesión, aceptas nuestros{" "}
             <a href="#" className="underline underline-offset-4 hover:text-primary">
-              Terms of Service
+              Términos de Servicio
             </a>{" "}
-            and{" "}
+            y{" "}
             <a href="#" className="underline underline-offset-4 hover:text-primary">
-              Privacy Policy
+              Política de Privacidad
             </a>
           </p>
         </div>

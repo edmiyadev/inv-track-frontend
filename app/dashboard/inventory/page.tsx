@@ -8,17 +8,17 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Inventory Tracking"
-        description="Monitor and manage stock levels across all products"
+        title="Seguimiento de Inventario"
+        description="Monitorea y gestiona los niveles de stock de todos los productos"
         actions={
           <div className="flex gap-2">
             <Button variant="outline">
               <FileText className="mr-2 h-4 w-4" />
-              Generate Report
+              Generar Reporte
             </Button>
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
-              Export Data
+              Exportar Datos
             </Button>
           </div>
         }

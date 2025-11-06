@@ -18,7 +18,7 @@ export function Header() {
       <div className="flex-1">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input type="search" placeholder="Search products, inventory..." className="pl-9 bg-background" />
+          <Input type="search" placeholder="Buscar productos, inventario..." className="pl-9 bg-background" />
         </div>
       </div>
 
@@ -31,7 +31,7 @@ export function Header() {
           >
             3
           </Badge>
-          <span className="sr-only">Notifications</span>
+          <span className="sr-only">Notificaciones</span>
         </Button>
         <ThemeToggle />
         {user && (

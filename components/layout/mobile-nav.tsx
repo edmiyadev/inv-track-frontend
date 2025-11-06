@@ -22,13 +22,13 @@ import { useAuthStore } from "@/lib/store/auth"
 import { Separator } from "@/components/ui/separator"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Products", href: "/dashboard/products", icon: Package },
-  { name: "Inventory", href: "/dashboard/inventory", icon: Warehouse },
-  { name: "Purchasing", href: "/dashboard/purchasing", icon: ShoppingCart },
-  { name: "Sales", href: "/dashboard/sales", icon: TrendingUp },
-  { name: "Users", href: "/dashboard/users", icon: Users },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Productos", href: "/dashboard/products", icon: Package },
+  { name: "Inventario", href: "/dashboard/inventory", icon: Warehouse },
+  { name: "Compras", href: "/dashboard/purchasing", icon: ShoppingCart },
+  { name: "Ventas", href: "/dashboard/sales", icon: TrendingUp },
+  { name: "Usuarios", href: "/dashboard/users", icon: Users },
+  { name: "Configuración", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function MobileNav() {
@@ -49,7 +49,7 @@ export function MobileNav() {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle menu</span>
+          <span className="sr-only">Abrir menú</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0 flex flex-col">
@@ -100,7 +100,7 @@ export function MobileNav() {
           <Link href="/dashboard/settings/profile" onClick={() => setOpen(false)} className="w-full">
             <Button variant="outline" className="w-full justify-start bg-transparent" size="sm">
               <User className="mr-2 h-4 w-4" />
-              Profile Settings
+              Configuración de Perfil
             </Button>
           </Link>
           <Button
@@ -110,7 +110,7 @@ export function MobileNav() {
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            Cerrar Sesión
           </Button>
         </div>
       </SheetContent>

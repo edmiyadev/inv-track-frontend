@@ -11,43 +11,43 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dashboard"
-        description="Overview of your inventory management system"
+        title="Panel de Control"
+        description="Vista general de tu sistema de gestión de inventario"
         actions={
           <Button asChild>
-            <Link href="/dashboard/products/new">Add Product</Link>
+            <Link href="/dashboard/products/new">Agregar Producto</Link>
           </Button>
         }
       />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          title="Total Products"
+          title="Total de Productos"
           value="1,284"
           change={{ value: 12, trend: "up" }}
           icon={Package}
-          description="Active products in inventory"
+          description="Productos activos en inventario"
         />
         <StatsCard
-          title="Low Stock Items"
+          title="Productos con Stock Bajo"
           value="23"
           change={{ value: 8, trend: "down" }}
           icon={TrendingDown}
-          description="Products below reorder point"
+          description="Productos por debajo del punto de reorden"
         />
         <StatsCard
-          title="Total Inventory Value"
+          title="Valor Total del Inventario"
           value="$284,392"
           change={{ value: 5, trend: "up" }}
           icon={DollarSign}
-          description="Current stock valuation"
+          description="Valoración actual del stock"
         />
         <StatsCard
-          title="Recent Orders"
+          title="Pedidos Recientes"
           value="156"
           change={{ value: 18, trend: "up" }}
           icon={ShoppingCart}
-          description="Orders this month"
+          description="Pedidos este mes"
         />
       </div>
 

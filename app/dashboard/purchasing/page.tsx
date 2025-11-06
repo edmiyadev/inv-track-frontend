@@ -10,25 +10,25 @@ import { InvoiceTable } from "@/components/purchasing/invoice-table"
 export default function PurchasingPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Purchasing" description="Manage purchase orders, suppliers, and invoices" />
+      <PageHeader title="Compras" description="Gestiona órdenes de compra, proveedores y facturas" />
 
       <Tabs defaultValue="orders" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="orders">Purchase Orders</TabsTrigger>
-          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="orders">Órdenes de Compra</TabsTrigger>
+          <TabsTrigger value="suppliers">Proveedores</TabsTrigger>
+          <TabsTrigger value="invoices">Facturas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="orders" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold">Purchase Orders</h2>
-              <p className="text-sm text-muted-foreground">Create and manage purchase orders</p>
+              <h2 className="text-2xl font-semibold">Órdenes de Compra</h2>
+              <p className="text-sm text-muted-foreground">Crea y gestiona órdenes de compra</p>
             </div>
             <Button asChild>
               <Link href="/dashboard/purchasing/orders/new">
                 <Plus className="mr-2 h-4 w-4" />
-                New Purchase Order
+                Nueva Orden de Compra
               </Link>
             </Button>
           </div>
@@ -38,13 +38,13 @@ export default function PurchasingPage() {
         <TabsContent value="suppliers" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold">Suppliers</h2>
-              <p className="text-sm text-muted-foreground">Manage supplier information</p>
+              <h2 className="text-2xl font-semibold">Proveedores</h2>
+              <p className="text-sm text-muted-foreground">Gestiona información de proveedores</p>
             </div>
             <Button asChild>
               <Link href="/dashboard/purchasing/suppliers/new">
                 <Plus className="mr-2 h-4 w-4" />
-                Add Supplier
+                Agregar Proveedor
               </Link>
             </Button>
           </div>
@@ -54,8 +54,8 @@ export default function PurchasingPage() {
         <TabsContent value="invoices" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold">Purchase Invoices</h2>
-              <p className="text-sm text-muted-foreground">Track and manage purchase invoices</p>
+              <h2 className="text-2xl font-semibold">Facturas de Compra</h2>
+              <p className="text-sm text-muted-foreground">Rastrea y gestiona facturas de compra</p>
             </div>
           </div>
           <InvoiceTable />

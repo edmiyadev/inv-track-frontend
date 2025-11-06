@@ -27,13 +27,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Products", href: "/dashboard/products", icon: Package },
-  { name: "Inventory", href: "/dashboard/inventory", icon: Warehouse },
-  { name: "Purchasing", href: "/dashboard/purchasing", icon: ShoppingCart },
-  { name: "Sales", href: "/dashboard/sales", icon: TrendingUp },
-  { name: "Users", href: "/dashboard/users", icon: Users },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Productos", href: "/dashboard/products", icon: Package },
+  { name: "Inventario", href: "/dashboard/inventory", icon: Warehouse },
+  { name: "Compras", href: "/dashboard/purchasing", icon: ShoppingCart },
+  { name: "Ventas", href: "/dashboard/sales", icon: TrendingUp },
+  { name: "Usuarios", href: "/dashboard/users", icon: Users },
+  { name: "Configuración", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function Sidebar() {
@@ -128,13 +128,13 @@ export function Sidebar() {
             <DropdownMenuItem asChild>
               <Link href="/dashboard/settings/profile">
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile Settings</span>
+                <span>Configuración de Perfil</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Logout</span>
+              <span>Cerrar Sesión</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

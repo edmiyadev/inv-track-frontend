@@ -8,18 +8,18 @@ export default function UsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Users"
-        description="Manage user accounts and access permissions"
+        title="Usuarios"
+        description="Gestiona cuentas de usuario y permisos de acceso"
         actions={
           <div className="flex gap-2">
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
-              Export
+              Exportar
             </Button>
             <Button asChild>
               <Link href="/dashboard/users/new">
                 <UserPlus className="mr-2 h-4 w-4" />
-                Add User
+                Agregar Usuario
               </Link>
             </Button>
           </div>
