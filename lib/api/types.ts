@@ -147,3 +147,46 @@ export interface CreateProductCategoryData {
 export interface UpdateProductCategoryData {
   name?: string
 }
+
+// Supplier Types
+export interface Supplier {
+  id: number
+  name: string
+  rnc: string | null
+  phone_number: string | null
+  email: string | null
+  address: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SuppliersResponse {
+  status: string
+  message: string
+  data: PaginatedData<Supplier>
+}
+
+export interface SupplierResponse {
+  status: string
+  message: string
+  data: Supplier
+}
+
+export interface CreateSupplierData {
+  name: string
+  rnc?: string | null
+  phone_number?: string | null
+  email?: string | null
+  address?: string | null
+  is_active?: boolean
+}
+
+export interface UpdateSupplierData {
+  name?: string
+  rnc?: string | null
+  phone_number?: string | null
+  email?: string | null
+  address?: string | null
+  is_active?: boolean
+}

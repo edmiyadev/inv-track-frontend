@@ -14,6 +14,15 @@ import {
   LogOut,
   User,
   FolderTree,
+  ChevronDown,
+  ShoppingBag,
+  DollarSign,
+  Building2,
+  ArrowRightLeft,
+  BarChart3,
+  Shield,
+  UserCog,
+  Truck,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,26 +35,66 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
-const navigation = [
-  { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Productos", href: "/dashboard/products", icon: Package },
-  { name: "Categorías", href: "/dashboard/categories", icon: FolderTree },
-  { name: "Inventario", href: "/dashboard/inventory", icon: Warehouse },
-  { name: "Compras", href: "/dashboard/purchasing", icon: ShoppingCart },
-  { name: "Ventas", href: "/dashboard/sales", icon: TrendingUp },
-  { name: "Usuarios", href: "/dashboard/users", icon: Users },
-  { name: "Configuración", href: "/dashboard/settings", icon: Settings },
+// Grupos de navegación
+const navigationGroups = [
+  {
+    name: "Dashboard",
+    items: [
+      { name: "Panel Principal", href: "/dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    name: "Operaciones",
+    icon: ShoppingBag,
+    items: [
+      { name: "Compras", href: "/dashboard/purchasing", icon: ShoppingCart },
+      { name: "Ventas", href: "/dashboard/sales", icon: DollarSign },
+    ],
+  },
+  {
+    name: "Inventario",
+    icon: Warehouse,
+    items: [
+      { name: "Productos", href: "/dashboard/products", icon: Package },
+      { name: "Categorías", href: "/dashboard/categories", icon: FolderTree },
+      { name: "Proveedores", href: "/dashboard/suppliers", icon: Truck },
+      { name: "Stock", href: "/dashboard/inventory", icon: Warehouse },
+      { name: "Movimientos", href: "/dashboard/inventory/history", icon: ArrowRightLeft },
+    ],
+  },
+  {
+    name: "Configuración",
+    icon: Settings,
+    items: [
+      { name: "Usuarios", href: "/dashboard/users", icon: Users },
+      { name: "Roles y Permisos", href: "/dashboard/users/roles", icon: Shield },
+      { name: "Preferencias", href: "/dashboard/settings", icon: UserCog },
+    ],
+  },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  const [openGroups, setOpenGroups] = useState<string[]>(["Dashboard", "Operaciones", "Inventario", "Configuración"])
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || "U"
-  const roleLabel = "User"
+
+  const toggleGroup = (groupName: string) => {
+    setOpenGroups(prev =>
+      prev.includes(groupName)
+        ? prev.filter(name => name !== groupName)
+        : [...prev, groupName]
+    )
+  }
 
   return (
     <aside
@@ -73,25 +122,112 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <nav className="flex-1 space-y-1 p-3">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+      <nav className="flex-1 overflow-y-auto p-3 space-y-2">
+        {navigationGroups.map((group) => {
+          // Si el grupo solo tiene un item (Dashboard), renderizarlo directamente
+          if (group.items.length === 1) {
+            const item = group.items[0]
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  collapsed && "justify-center",
+                )}
+                title={collapsed ? item.name : undefined}
+              >
+                <item.icon className="h-5 w-5 shrink-0" />
+                {!collapsed && <span>{item.name}</span>}
+              </Link>
+            )
+          }
+
+          // Grupos colapsables
+          const hasActiveItem = group.items.some(item => 
+            pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+          )
+          const isOpen = openGroups.includes(group.name)
+
+          if (collapsed) {
+            // Modo colapsado: mostrar solo iconos
+            return (
+              <div key={group.name} className="space-y-1">
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center justify-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}
+                      title={item.name}
+                    >
+                      <item.icon className="h-5 w-5 shrink-0" />
+                    </Link>
+                  )
+                })}
+              </div>
+            )
+          }
+
           return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                collapsed && "justify-center",
-              )}
-              title={collapsed ? item.name : undefined}
+            <Collapsible
+              key={group.name}
+              open={isOpen}
+              onOpenChange={() => toggleGroup(group.name)}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-between px-3 py-2.5 h-auto text-sm font-medium",
+                    hasActiveItem 
+                      ? "text-foreground" 
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    {group.icon && <group.icon className="h-5 w-5 shrink-0" />}
+                    <span>{group.name}</span>
+                  </div>
+                  <ChevronDown 
+                    className={cn(
+                      "h-4 w-4 transition-transform shrink-0",
+                      isOpen && "rotate-180"
+                    )} 
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-1 pt-1">
+                {group.items.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 ml-6 text-sm transition-colors",
+                        isActive
+                          ? "bg-primary text-primary-foreground font-medium"
+                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span>{item.name}</span>
+                    </Link>
+                  )
+                })}
+              </CollapsibleContent>
+            </Collapsible>
           )
         })}
       </nav>
