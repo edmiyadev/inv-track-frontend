@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -13,76 +13,81 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { Product } from "@/types"
-
-const mockProducts: Product[] = [
-  {
-    id: "1",
-    name: "Wireless Mouse",
-    sku: "MSE-001",
-    category: "Electronics",
-    price: 29.99,
-    stock: 145,
-    reorderPoint: 20,
-    status: "in-stock",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "2",
-    name: "USB-C Cable",
-    sku: "CBL-002",
-    category: "Electronics",
-    price: 12.99,
-    stock: 8,
-    reorderPoint: 50,
-    status: "low-stock",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "3",
-    name: "Mechanical Keyboard",
-    sku: "KBD-003",
-    category: "Electronics",
-    price: 89.99,
-    stock: 0,
-    reorderPoint: 10,
-    status: "out-of-stock",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "4",
-    name: "Office Chair",
-    sku: "FUR-004",
-    category: "Furniture",
-    price: 249.99,
-    stock: 32,
-    reorderPoint: 5,
-    status: "in-stock",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "5",
-    name: "Desk Lamp",
-    sku: "LGT-005",
-    category: "Office Supplies",
-    price: 34.99,
-    stock: 67,
-    reorderPoint: 15,
-    status: "in-stock",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-]
+import { useAuthStore } from "@/lib/store/auth"
+import { productsApi } from "@/lib/api/products"
+import type { Product } from "@/lib/api/types"
 
 export function ProductTable() {
-  const [products] = useState<Product[]>(mockProducts)
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const accessToken = useAuthStore((state) => state.accessToken)
 
-  const getStatusBadge = (status: Product["status"]) => {
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!accessToken) return
+      
+      try {
+        setIsLoading(true)
+        setError(null)
+        const response = await productsApi.getAll(accessToken)
+        setProducts(response.data)
+      } catch (err) {
+        console.error('Error fetching products:', err)
+        setError(err instanceof Error ? err.message : 'Error al cargar productos')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [accessToken])
+
+  const handleDeleteClick = (product: Product) => {
+    setProductToDelete(product)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!accessToken || !productToDelete) return
+    
+    try {
+      setIsDeleting(true)
+      await productsApi.delete(productToDelete.id, accessToken)
+      setProducts(products.filter(p => p.id !== productToDelete.id))
+      setDeleteDialogOpen(false)
+      setProductToDelete(null)
+    } catch (err) {
+      console.error('Error deleting product:', err)
+      alert('Error al eliminar el producto')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const getStockStatus = (stock: number, reorderPoint: number): 'in-stock' | 'low-stock' | 'out-of-stock' => {
+    if (stock === 0) return 'out-of-stock'
+    if (stock <= reorderPoint) return 'low-stock'
+    return 'in-stock'
+  }
+
+  const getStatusBadge = (stock: number, reorderPoint: number) => {
+    const status = getStockStatus(stock, reorderPoint)
+    
     const variants = {
       "in-stock": "default",
       "low-stock": "secondary",
@@ -90,9 +95,9 @@ export function ProductTable() {
     } as const
 
     const labels = {
-      "in-stock": "In Stock",
-      "low-stock": "Low Stock",
-      "out-of-stock": "Out of Stock",
+      "in-stock": "En Stock",
+      "low-stock": "Stock Bajo",
+      "out-of-stock": "Sin Stock",
     }
 
     return (
@@ -102,64 +107,118 @@ export function ProductTable() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-8">
+        <div className="flex items-center justify-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="ml-3 text-muted-foreground">Cargando productos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-destructive bg-destructive/10 p-8">
+        <p className="text-center text-destructive">{error}</p>
+      </div>
+    )
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-8">
+        <p className="text-center text-muted-foreground">No hay productos disponibles</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>SKU</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead className="text-right">Price</TableHead>
-            <TableHead className="text-right">Stock</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-[70px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {products.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell className="font-mono text-sm text-muted-foreground">{product.sku}</TableCell>
-              <TableCell>{product.category}</TableCell>
-              <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
-              <TableCell className="text-right">{product.stock}</TableCell>
-              <TableCell>{getStatusBadge(product.status)}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href={`/products/${product.id}`}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/products/${product.id}/edit`}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+    <>
+      <div className="rounded-lg border border-border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Producto</TableHead>
+              <TableHead>SKU</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead className="text-right">Precio</TableHead>
+              <TableHead className="text-right">Stock</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="w-[70px]"></TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell className="font-mono text-sm text-muted-foreground">{product.sku}</TableCell>
+                <TableCell className="max-w-xs truncate text-muted-foreground">{product.description || '-'}</TableCell>
+                <TableCell className="text-right">${parseFloat(product.price).toFixed(2)}</TableCell>
+                <TableCell className="text-right">{product.stock_quantity}</TableCell>
+                <TableCell>{getStatusBadge(product.stock_quantity, product.reorder_point)}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Abrir menú</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/products/${product.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver Detalles
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/products/${product.id}/edit`}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Editar
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        className="text-destructive"
+                        onClick={() => handleDeleteClick(product)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente el producto
+              <strong> {productToDelete?.name}</strong> del sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
