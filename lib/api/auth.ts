@@ -2,7 +2,6 @@ import { apiClient } from './client'
 import type {
   LoginCredentials,
   LoginResponse,
-  RefreshTokenResponse,
   User,
 } from './types'
 
@@ -15,21 +14,13 @@ export const authApi = {
     return apiClient.post('/auth/logout', {}, token)
   },
 
-  refreshToken: async (
-    refreshToken: string
-  ): Promise<RefreshTokenResponse> => {
-    return apiClient.post<RefreshTokenResponse>('/auth/refresh', {
-      refresh_token: refreshToken,
-    })
-  },
-
   getProfile: async (token: string): Promise<User> => {
-    return apiClient.get<User>('/auth/me', token)
+    return apiClient.get<User>('/api/user', token)
   },
 
   verifyToken: async (token: string): Promise<boolean> => {
     try {
-      await apiClient.post('/auth/verify', { token }, token)
+      await authApi.getProfile(token)
       return true
     } catch {
       return false

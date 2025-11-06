@@ -153,32 +153,6 @@ export default function LoginPage() {
               </Alert>
             )}
 
-            {/* Demo Credentials */}
-            <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-foreground">Demo Accounts</p>
-                <Badge variant="secondary" className="text-xs">Testing</Badge>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="space-y-1">
-                  <p className="font-medium text-muted-foreground">Admin Access</p>
-                  <p className="font-mono">admin / admin123</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-medium text-muted-foreground">Manager</p>
-                  <p className="font-mono">manager / manager123</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-medium text-muted-foreground">Staff</p>
-                  <p className="font-mono">staff / staff123</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="font-medium text-muted-foreground">Viewer</p>
-                  <p className="font-mono">viewer / viewer123</p>
-                </div>
-              </div>
-            </div>
-
             {/* Username Field */}
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">

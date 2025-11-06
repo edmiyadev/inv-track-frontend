@@ -18,7 +18,6 @@ export function useAuth() {
     error: store.error,
     login: store.login,
     logout: handleLogout,
-    refreshAuth: store.refreshAuth,
     checkAuth: store.checkAuth,
     clearError: store.clearError,
   }

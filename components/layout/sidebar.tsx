@@ -42,8 +42,8 @@ export function Sidebar() {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
-  const userInitial = user?.username?.charAt(0)?.toUpperCase() || "U"
-  const roleLabel = user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || "U"
+  const roleLabel = "User"
 
   return (
     <aside
@@ -107,8 +107,8 @@ export function Sidebar() {
                 </div>
                 {!collapsed && (
                   <div className="flex-1 overflow-hidden text-left">
-                    <p className="truncate text-sm font-medium">{user?.username || "User"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{roleLabel}</p>
+                    <p className="truncate text-sm font-medium">{user?.name || "User"}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user?.email || ""}</p>
                   </div>
                 )}
               </div>
@@ -120,8 +120,8 @@ export function Sidebar() {
                 {userInitial}
               </div>
               <div className="overflow-hidden">
-                <p className="truncate text-sm font-medium">{user?.username}</p>
-                <p className="truncate text-xs text-muted-foreground">{roleLabel}</p>
+                <p className="truncate text-sm font-medium">{user?.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
               </div>
             </div>
             <DropdownMenuSeparator />

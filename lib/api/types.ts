@@ -1,12 +1,11 @@
 export interface User {
-  id: string
+  id: number
+  name: string
   username: string
   email: string
-  role: 'admin' | 'manager' | 'staff' | 'viewer'
-  firstName?: string
-  lastName?: string
-  createdAt: string
-  updatedAt: string
+  email_verified_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface LoginCredentials {
@@ -15,21 +14,18 @@ export interface LoginCredentials {
 }
 
 export interface LoginResponse {
-  access_token: string
-  refresh_token: string
-  token_type: string
-  user: User
-}
-
-export interface RefreshTokenResponse {
-  access_token: string
-  token_type: string
+  status: string
+  message: string
+  data: {
+    access_token: string
+    token_type: string
+    user: User
+  }
 }
 
 export interface AuthState {
   user: User | null
   accessToken: string | null
-  refreshToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
 }

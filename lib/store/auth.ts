@@ -6,16 +6,16 @@ import type { User, LoginCredentials } from '@/lib/api/types'
 interface AuthStore {
   user: User | null
   accessToken: string | null
-  refreshToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
+  _hasHydrated: boolean
 
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => Promise<void>
-  refreshAuth: () => Promise<void>
   checkAuth: () => Promise<void>
   clearError: () => void
+  setHasHydrated: (hasHydrated: boolean) => void
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -23,20 +23,24 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       user: null,
       accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      _hasHydrated: false,
+
+      setHasHydrated: (hasHydrated: boolean) => {
+        set({ _hasHydrated: hasHydrated })
+      },
 
       login: async (credentials: LoginCredentials) => {
         try {
           set({ isLoading: true, error: null })
+          
           const response = await authApi.login(credentials)
           
           set({
-            user: response.user,
-            accessToken: response.access_token,
-            refreshToken: response.refresh_token,
+            user: response.data.user,
+            accessToken: response.data.access_token,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -45,7 +49,6 @@ export const useAuthStore = create<AuthStore>()(
           set({
             user: null,
             accessToken: null,
-            refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
             error: error instanceof Error ? error.message : 'Login failed',
@@ -67,7 +70,6 @@ export const useAuthStore = create<AuthStore>()(
           set({
             user: null,
             accessToken: null,
-            refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
             error: null,
@@ -75,62 +77,39 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      refreshAuth: async () => {
-        const { refreshToken } = get()
-        
-        if (!refreshToken) {
-          throw new Error('No refresh token available')
-        }
-
-        try {
-          const response = await authApi.refreshToken(refreshToken)
-          set({
-            accessToken: response.access_token,
-            error: null,
-          })
-        } catch (error) {
-          set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            isAuthenticated: false,
-            error: 'Session expired',
-          })
-          throw error
-        }
-      },
-
       checkAuth: async () => {
-        const { accessToken } = get()
+        const { accessToken, user } = get()
         
         if (!accessToken) {
           set({ isAuthenticated: false, isLoading: false })
           return
         }
 
+        // Si ya tenemos un usuario y token en el store (persistido), considerarlo válido
+        if (user && accessToken) {
+          set({ isAuthenticated: true, isLoading: false })
+          return
+        }
+
         try {
           set({ isLoading: true })
-          const user = await authApi.getProfile(accessToken)
+          const userData = await authApi.getProfile(accessToken)
           set({
-            user,
+            user: userData,
             isAuthenticated: true,
             isLoading: false,
             error: null,
           })
         } catch (error) {
-          try {
-            await get().refreshAuth()
-            await get().checkAuth()
-          } catch (refreshError) {
-            set({
-              user: null,
-              accessToken: null,
-              refreshToken: null,
-              isAuthenticated: false,
-              isLoading: false,
-              error: 'Authentication failed',
-            })
-          }
+          console.warn('Check auth failed, clearing session:', error)
+          // En caso de error, limpiar la sesión
+          set({
+            user: null,
+            accessToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+          })
         }
       },
 
@@ -142,9 +121,11 @@ export const useAuthStore = create<AuthStore>()(
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
     }
   )
 )

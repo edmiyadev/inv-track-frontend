@@ -37,8 +37,7 @@ export function MobileNav() {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
-  const userInitial = user?.username?.charAt(0)?.toUpperCase() || "U"
-  const roleLabel = user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || "U"
 
   const handleLogout = () => {
     logout()
@@ -94,8 +93,8 @@ export function MobileNav() {
               {userInitial}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium">{user?.username || "User"}</p>
-              <p className="truncate text-xs text-muted-foreground">{roleLabel}</p>
+              <p className="truncate text-sm font-medium">{user?.name || "User"}</p>
+              <p className="truncate text-xs text-muted-foreground">{user?.email || ""}</p>
             </div>
           </div>
           <Link href="/dashboard/settings/profile" onClick={() => setOpen(false)} className="w-full">
