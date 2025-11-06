@@ -6,11 +6,13 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Pencil, Trash2, ArrowLeft } from "lucide-react"
+import { Pencil, Trash2, ArrowLeft, Package, Building2 } from "lucide-react"
 import Link from "next/link"
 import { useAuthStore } from "@/lib/store/auth"
 import { productsApi } from "@/lib/api/products"
-import type { Product } from "@/lib/api/types"
+import { categoriesApi } from "@/lib/api/categories"
+import { suppliersApi } from "@/lib/api/suppliers"
+import type { Product, ProductCategory, Supplier } from "@/lib/api/types"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +28,8 @@ import {
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const [product, setProduct] = useState<Product | null>(null)
+  const [category, setCategory] = useState<ProductCategory | null>(null)
+  const [supplier, setSupplier] = useState<Supplier | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +45,26 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         setError(null)
         const response = await productsApi.getById(parseInt(resolvedParams.id), accessToken)
         setProduct(response.data)
+
+        // Fetch category if exists
+        if (response.data.product_category_id) {
+          try {
+            const categoryResponse = await categoriesApi.getById(response.data.product_category_id, accessToken)
+            setCategory(categoryResponse.data)
+          } catch (err) {
+            console.error('Error fetching category:', err)
+          }
+        }
+
+        // Fetch supplier if exists
+        if (response.data.supplier_id) {
+          try {
+            const supplierResponse = await suppliersApi.getById(response.data.supplier_id, accessToken)
+            setSupplier(supplierResponse.data)
+          } catch (err) {
+            console.error('Error fetching supplier:', err)
+          }
+        }
       } catch (err) {
         console.error('Error fetching product:', err)
         setError(err instanceof Error ? err.message : 'Error al cargar el producto')
@@ -187,16 +211,40 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   <p className="mt-1 font-mono text-base">{product.sku}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">ID Categoría</p>
-                  <p className="mt-1 text-base">{product.product_category_id || 'Sin categoría'}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Categoría</p>
+                  {category ? (
+                    <div className="mt-1 flex items-center gap-2">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <Link 
+                        href={`/dashboard/categories/${category.id}`}
+                        className="text-base hover:underline"
+                      >
+                        {category.name}
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-base text-muted-foreground">Sin categoría</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Precio</p>
                   <p className="mt-1 text-base font-semibold">${product.price}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">ID Proveedor</p>
-                  <p className="mt-1 text-base">{product.supplier_id || 'Sin proveedor'}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Proveedor</p>
+                  {supplier ? (
+                    <div className="mt-1 flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <Link 
+                        href={`/dashboard/suppliers/${supplier.id}`}
+                        className="text-base hover:underline"
+                      >
+                        {supplier.name}
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-base text-muted-foreground">Sin proveedor</p>
+                  )}
                 </div>
               </div>
               <div>

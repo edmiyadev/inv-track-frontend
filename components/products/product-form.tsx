@@ -9,12 +9,16 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, ArrowLeft } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Loader2 } from "lucide-react"
 import { z } from "zod"
 import { useAuthStore } from "@/lib/store/auth"
 import { productsApi } from "@/lib/api/products"
+import { categoriesApi } from "@/lib/api/categories"
+import { suppliersApi } from "@/lib/api/suppliers"
 import type { Product } from "@/lib/api/types"
 import Link from "next/link"
+import { useQuery } from "@tanstack/react-query"
 
 // Validation schema matching API structure
 const productFormSchema = z.object({
@@ -57,9 +61,38 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
   const accessToken = useAuthStore((state) => state.accessToken)
   const router = useRouter()
 
+  // Fetch categories
+  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: async () => {
+      if (!accessToken) throw new Error('No token')
+      // Fetch all categories (large per_page to get all)
+      return categoriesApi.getAll(accessToken, 1, 100)
+    },
+    enabled: !!accessToken,
+    staleTime: 60000, // 1 minute
+  })
+
+  // Fetch suppliers
+  const { data: suppliersData, isLoading: isLoadingSuppliers } = useQuery({
+    queryKey: ['suppliers', 'all'],
+    queryFn: async () => {
+      if (!accessToken) throw new Error('No token')
+      // Fetch all active suppliers
+      return suppliersApi.getAll(accessToken, 1, 100)
+    },
+    enabled: !!accessToken,
+    staleTime: 60000, // 1 minute
+  })
+
+  const categories = categoriesData?.data.data || []
+  const suppliers = suppliersData?.data.data.filter(s => s.is_active) || []
+
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
@@ -74,6 +107,9 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
       supplier_id: defaultValues.supplier_id?.toString() || "",
     } : undefined,
   })
+
+  const categoryId = watch("product_category_id")
+  const supplierId = watch("supplier_id")
 
   const handleFormSubmit = async (data: ProductFormData) => {
     if (!accessToken) {
@@ -135,15 +171,52 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="product_category_id">ID Categoría</Label>
-              <Input id="product_category_id" type="number" placeholder="Ingresa el ID de la categoría" {...register("product_category_id")} />
-              {errors.product_category_id && <p className="text-sm text-destructive">{errors.product_category_id.message}</p>}
+              <Label htmlFor="product_category_id">Categoría</Label>
+              <Select
+                value={categoryId || "none"}
+                onValueChange={(value) => setValue("product_category_id", value === "none" ? "" : value)}
+                disabled={isLoadingCategories}
+              >
+                <SelectTrigger id="product_category_id">
+                  <SelectValue placeholder={isLoadingCategories ? "Cargando..." : "Selecciona una categoría"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin categoría</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.product_category_id && (
+                <p className="text-sm text-destructive">{errors.product_category_id.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="supplier_id">ID Proveedor</Label>
-              <Input id="supplier_id" type="number" placeholder="Ingresa el ID del proveedor" {...register("supplier_id")} />
-              {errors.supplier_id && <p className="text-sm text-destructive">{errors.supplier_id.message}</p>}
+              <Label htmlFor="supplier_id">Proveedor</Label>
+              <Select
+                value={supplierId || "none"}
+                onValueChange={(value) => setValue("supplier_id", value === "none" ? "" : value)}
+                disabled={isLoadingSuppliers}
+              >
+                <SelectTrigger id="supplier_id">
+                  <SelectValue placeholder={isLoadingSuppliers ? "Cargando..." : "Selecciona un proveedor"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin proveedor</SelectItem>
+                  {suppliers.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id.toString()}>
+                      {supplier.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.supplier_id && (
+                <p className="text-sm text-destructive">{errors.supplier_id.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">Solo se muestran proveedores activos</p>
             </div>
           </div>
         </CardContent>
