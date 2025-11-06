@@ -13,6 +13,7 @@ import {
   TrendingUp,
   LogOut,
   User,
+  FolderTree,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,7 @@ import {
 const navigation = [
   { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
   { name: "Productos", href: "/dashboard/products", icon: Package },
+  { name: "Categorías", href: "/dashboard/categories", icon: FolderTree },
   { name: "Inventario", href: "/dashboard/inventory", icon: Warehouse },
   { name: "Compras", href: "/dashboard/purchasing", icon: ShoppingCart },
   { name: "Ventas", href: "/dashboard/sales", icon: TrendingUp },

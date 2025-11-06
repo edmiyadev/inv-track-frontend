@@ -120,3 +120,30 @@ export interface UpdateProductData {
   supplier_id?: number | null
 }
 
+// Product Category Types
+export interface ProductCategory {
+  id: number
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ProductCategoriesResponse {
+  status: string
+  message: string
+  data: PaginatedData<ProductCategory>
+}
+
+export interface ProductCategoryResponse {
+  status: string
+  message: string
+  data: ProductCategory
+}
+
+export interface CreateProductCategoryData {
+  name: string
+}
+
+export interface UpdateProductCategoryData {
+  name?: string
+}

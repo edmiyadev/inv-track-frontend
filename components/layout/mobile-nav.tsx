@@ -13,6 +13,7 @@ import {
   User,
   ShoppingCart,
   TrendingUp,
+  FolderTree,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -24,6 +25,7 @@ import { Separator } from "@/components/ui/separator"
 const navigation = [
   { name: "Panel", href: "/dashboard", icon: LayoutDashboard },
   { name: "Productos", href: "/dashboard/products", icon: Package },
+  { name: "Categorías", href: "/dashboard/categories", icon: FolderTree },
   { name: "Inventario", href: "/dashboard/inventory", icon: Warehouse },
   { name: "Compras", href: "/dashboard/purchasing", icon: ShoppingCart },
   { name: "Ventas", href: "/dashboard/sales", icon: TrendingUp },
