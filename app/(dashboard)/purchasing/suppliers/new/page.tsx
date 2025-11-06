@@ -12,11 +12,11 @@ export default function NewSupplierPage() {
     console.log("[v0] Creating supplier:", data)
     // TODO: Implement API call to create supplier
     await new Promise((resolve) => setTimeout(resolve, 1000))
-    router.push("/purchasing")
+    router.push("/dashboard/purchasing")
   }
 
   const handleCancel = () => {
-    router.push("/purchasing")
+    router.push("/dashboard/purchasing")
   }
 
   return (

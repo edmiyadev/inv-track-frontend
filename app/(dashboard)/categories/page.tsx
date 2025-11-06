@@ -12,7 +12,7 @@ export default function CategoriesPage() {
         description="Gestiona las categorías de tus productos"
         actions={
           <Button asChild>
-            <Link href="/dashboard/categories/new">
+            <Link href="/categories/new">
               <Plus className="mr-2 h-4 w-4" />
               Nueva Categoría
             </Link>

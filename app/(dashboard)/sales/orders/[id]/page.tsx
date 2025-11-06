@@ -32,10 +32,10 @@ export default function SalesOrderDetailPage({ params }: { params: { id: string 
       <PageHeader
         title={order.soNumber}
         description={`Sales order for ${order.customerName}`}
-        action={
+        actions={
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/sales/orders/${params.id}/edit`}>
+              <Link href={`/dashboard/sales/orders/${params.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Link>
