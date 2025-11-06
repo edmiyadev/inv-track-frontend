@@ -87,10 +87,10 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
 
       if (mode === "create") {
         await productsApi.create(productData, accessToken)
-        router.push('/dashboard/products')
+        router.push('/products')
       } else if (productId) {
         await productsApi.update(productId, productData, accessToken)
-        router.push(`/dashboard/products/${productId}`)
+        router.push(`/products/${productId}`)
       }
     } catch (error) {
       console.error('Error saving product:', error)
@@ -195,7 +195,7 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" disabled={isSubmitting} asChild>
-          <Link href={mode === "edit" && productId ? `/dashboard/products/${productId}` : "/dashboard/products"}>
+          <Link href={mode === "edit" && productId ? `/products/${productId}` : "/products"}>
             Cancelar
           </Link>
         </Button>

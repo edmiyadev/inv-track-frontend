@@ -26,7 +26,7 @@ export default function PurchasingPage() {
               <p className="text-sm text-muted-foreground">Crea y gestiona órdenes de compra</p>
             </div>
             <Button asChild>
-              <Link href="/dashboard/purchasing/orders/new">
+              <Link href="/purchasing/orders/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Nueva Orden de Compra
               </Link>
@@ -42,7 +42,7 @@ export default function PurchasingPage() {
               <p className="text-sm text-muted-foreground">Gestiona información de proveedores</p>
             </div>
             <Button asChild>
-              <Link href="/dashboard/purchasing/suppliers/new">
+              <Link href="/purchasing/suppliers/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Agregar Proveedor
               </Link>

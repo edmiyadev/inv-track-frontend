@@ -264,7 +264,7 @@ export function Sidebar() {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/settings/profile">
+              <Link href="/settings/profile">
                 <User className="mr-2 h-4 w-4" />
                 <span>Configuración de Perfil</span>
               </Link>

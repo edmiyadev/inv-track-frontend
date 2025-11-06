@@ -41,7 +41,7 @@ export function LowStockAlert() {
             </div>
           ))}
           <Button asChild className="w-full bg-transparent" variant="outline">
-            <Link href="/dashboard/inventory">View All Inventory</Link>
+            <Link href="/inventory">View All Inventory</Link>
           </Button>
         </div>
       </CardContent>

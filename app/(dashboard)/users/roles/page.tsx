@@ -12,7 +12,7 @@ export default function RolesPage() {
         title="Roles & Permissions"
         description="Manage user roles and configure granular permissions"
         actions={
-          <Link href="/dashboard/users/roles/new">
+          <Link href="/users/roles/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               Create Role

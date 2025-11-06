@@ -34,7 +34,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: { id: stri
         actions={
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/dashboard/purchasing/orders/${params.id}/edit`}>
+              <Link href={`/purchasing/orders/${params.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Link>

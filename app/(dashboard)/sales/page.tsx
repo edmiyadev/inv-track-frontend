@@ -26,7 +26,7 @@ export default function SalesPage() {
               <p className="text-sm text-muted-foreground">Crea y gestiona órdenes de venta</p>
             </div>
             <Button asChild>
-              <Link href="/dashboard/sales/orders/new">
+              <Link href="/sales/orders/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Nueva Orden de Venta
               </Link>
@@ -42,7 +42,7 @@ export default function SalesPage() {
               <p className="text-sm text-muted-foreground">Gestiona información de clientes</p>
             </div>
             <Button asChild>
-              <Link href="/dashboard/sales/customers/new">
+              <Link href="/sales/customers/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Agregar Cliente
               </Link>

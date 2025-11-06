@@ -58,7 +58,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
     try {
       setIsDeleting(true)
       await suppliersApi.delete(supplier.id, accessToken)
-      router.push('/dashboard/suppliers')
+      router.push('/suppliers')
       router.refresh()
     } catch (err) {
       console.error('Error deleting supplier:', err)
@@ -85,7 +85,7 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
           <p className="text-center text-destructive">{error || 'Proveedor no encontrado'}</p>
           <div className="mt-4 text-center">
             <Button asChild variant="outline">
-              <Link href="/dashboard/suppliers">
+              <Link href="/suppliers">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver a Proveedores
               </Link>
@@ -104,13 +104,13 @@ export default function SupplierDetailPage({ params }: { params: Promise<{ id: s
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <Link href="/dashboard/suppliers">
+              <Link href="/suppliers">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver
               </Link>
             </Button>
             <Button asChild>
-              <Link href={`/dashboard/suppliers/${supplier.id}/edit`}>
+              <Link href={`/suppliers/${supplier.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Editar
               </Link>

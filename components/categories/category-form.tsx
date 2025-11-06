@@ -76,7 +76,7 @@ export function CategoryForm({ category, categoryId }: CategoryFormProps) {
         await categoriesApi.create(data, accessToken)
         alert("Categoría creada exitosamente")
       }
-      router.push("/dashboard/categories")
+      router.push("/categories")
       router.refresh()
     } catch (error) {
       console.error("Error saving category:", error)
@@ -126,7 +126,7 @@ export function CategoryForm({ category, categoryId }: CategoryFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push("/dashboard/categories")}
+              onClick={() => router.push("/categories")}
               disabled={isSubmitting}
             >
               Cancelar

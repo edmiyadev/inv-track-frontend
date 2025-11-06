@@ -35,7 +35,7 @@ export default function SalesOrderDetailPage({ params }: { params: { id: string 
         actions={
           <div className="flex gap-2">
             <Button variant="outline" asChild>
-              <Link href={`/dashboard/sales/orders/${params.id}/edit`}>
+              <Link href={`/sales/orders/${params.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Link>

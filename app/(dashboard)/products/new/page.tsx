@@ -11,7 +11,7 @@ export default function NewProductPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/products">
+          <Link href="/products">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

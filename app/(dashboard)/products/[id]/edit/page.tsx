@@ -54,7 +54,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="space-y-6">
         <Button variant="ghost" asChild>
-          <Link href="/dashboard/products">
+          <Link href="/products">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a Productos
           </Link>
@@ -70,7 +70,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href={`/dashboard/products/${resolvedParams.id}`}>
+          <Link href={`/products/${resolvedParams.id}`}>
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

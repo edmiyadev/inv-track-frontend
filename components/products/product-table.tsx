@@ -164,13 +164,13 @@ export function ProductTable() {
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/products/${product.id}`}>
+                          <Link href={`/products/${product.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
                             Ver Detalles
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/products/${product.id}/edit`}>
+                          <Link href={`/products/${product.id}/edit`}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </Link>

@@ -154,13 +154,13 @@ export function SupplierTable() {
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/suppliers/${supplier.id}`}>
+                          <Link href={`/suppliers/${supplier.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
                             Ver Detalles
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/suppliers/${supplier.id}/edit`}>
+                          <Link href={`/suppliers/${supplier.id}/edit`}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </Link>

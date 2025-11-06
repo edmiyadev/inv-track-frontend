@@ -15,7 +15,7 @@ export default function DashboardPage() {
         description="Vista general de tu sistema de gestión de inventario"
         actions={
           <Button asChild>
-            <Link href="/dashboard/products/new">Agregar Producto</Link>
+            <Link href="/products/new">Agregar Producto</Link>
           </Button>
         }
       />

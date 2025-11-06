@@ -81,11 +81,11 @@ export default function NewSalesOrderPage() {
   const handleSubmit = async (data: SalesOrderFormData) => {
     console.log("[v0] Creating sales order:", data)
     await new Promise((resolve) => setTimeout(resolve, 1000))
-    router.push("/dashboard/sales")
+    router.push("/sales")
   }
 
   const handleCancel = () => {
-    router.push("/dashboard/sales")
+    router.push("/sales")
   }
 
   return (

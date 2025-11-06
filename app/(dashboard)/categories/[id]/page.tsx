@@ -57,7 +57,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
     try {
       setIsDeleting(true)
       await categoriesApi.delete(category.id, accessToken)
-      router.push('/dashboard/categories')
+      router.push('/categories')
       router.refresh()
     } catch (err) {
       console.error('Error deleting category:', err)
@@ -84,7 +84,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
           <p className="text-center text-destructive">{error || 'Categoría no encontrada'}</p>
           <div className="mt-4 text-center">
             <Button asChild variant="outline">
-              <Link href="/dashboard/categories">
+              <Link href="/categories">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver a Categorías
               </Link>
@@ -103,13 +103,13 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
         actions={
           <div className="flex gap-2">
             <Button asChild variant="outline">
-              <Link href="/dashboard/categories">
+              <Link href="/categories">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver
               </Link>
             </Button>
             <Button asChild>
-              <Link href={`/dashboard/categories/${category.id}/edit`}>
+              <Link href={`/categories/${category.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Editar
               </Link>

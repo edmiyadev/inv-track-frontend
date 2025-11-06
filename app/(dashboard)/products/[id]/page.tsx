@@ -58,7 +58,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     try {
       setIsDeleting(true)
       await productsApi.delete(product.id, accessToken)
-      router.push('/dashboard/products')
+      router.push('/products')
     } catch (err) {
       console.error('Error deleting product:', err)
       alert('Error al eliminar el producto')
@@ -110,7 +110,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     return (
       <div className="space-y-6">
         <Button variant="ghost" asChild>
-          <Link href="/dashboard/products">
+          <Link href="/products">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Volver a Productos
           </Link>
@@ -126,7 +126,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/products">
+          <Link href="/products">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -159,7 +159,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   </AlertDialogContent>
                 </AlertDialog>
                 <Button asChild>
-                  <Link href={`/dashboard/products/${resolvedParams.id}/edit`}>
+                  <Link href={`/products/${resolvedParams.id}/edit`}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Editar Producto
                   </Link>

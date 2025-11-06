@@ -104,7 +104,7 @@ export function SupplierForm({ supplier, supplierId }: SupplierFormProps) {
         await suppliersApi.create(data, accessToken)
         alert("Proveedor creado exitosamente")
       }
-      router.push("/dashboard/suppliers")
+      router.push("/suppliers")
       router.refresh()
     } catch (error) {
       console.error("Error saving supplier:", error)
@@ -236,7 +236,7 @@ export function SupplierForm({ supplier, supplierId }: SupplierFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push("/dashboard/suppliers")}
+              onClick={() => router.push("/suppliers")}
               disabled={isSubmitting}
             >
               Cancelar

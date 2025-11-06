@@ -45,28 +45,28 @@ const navigationGroups = [
     name: "Operaciones",
     icon: ShoppingBag,
     items: [
-      { name: "Compras", href: "/dashboard/purchasing", icon: ShoppingCart },
-      { name: "Ventas", href: "/dashboard/sales", icon: DollarSign },
+      { name: "Compras", href: "/purchasing", icon: ShoppingCart },
+      { name: "Ventas", href: "/sales", icon: DollarSign },
     ],
   },
   {
     name: "Inventario",
     icon: Warehouse,
     items: [
-      { name: "Productos", href: "/dashboard/products", icon: Package },
-      { name: "Categorías", href: "/dashboard/categories", icon: FolderTree },
-      { name: "Proveedores", href: "/dashboard/suppliers", icon: Truck },
-      { name: "Stock", href: "/dashboard/inventory", icon: Warehouse },
-      { name: "Movimientos", href: "/dashboard/inventory/history", icon: ArrowRightLeft },
+      { name: "Productos", href: "/products", icon: Package },
+      { name: "Categorías", href: "/categories", icon: FolderTree },
+      { name: "Proveedores", href: "/suppliers", icon: Truck },
+      { name: "Stock", href: "/inventory", icon: Warehouse },
+      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft },
     ],
   },
   {
     name: "Configuración",
     icon: Settings,
     items: [
-      { name: "Usuarios", href: "/dashboard/users", icon: Users },
-      { name: "Roles y Permisos", href: "/dashboard/users/roles", icon: Shield },
-      { name: "Preferencias", href: "/dashboard/settings", icon: UserCog },
+      { name: "Usuarios", href: "/users", icon: Users },
+      { name: "Roles y Permisos", href: "/users/roles", icon: Shield },
+      { name: "Preferencias", href: "/settings", icon: UserCog },
     ],
   },
 ]
@@ -208,7 +208,7 @@ export function MobileNav() {
               <p className="truncate text-xs text-muted-foreground">{user?.email || ""}</p>
             </div>
           </div>
-          <Link href="/dashboard/settings/profile" onClick={() => setOpen(false)} className="w-full">
+          <Link href="/settings/profile" onClick={() => setOpen(false)} className="w-full">
             <Button variant="outline" className="w-full justify-start bg-transparent" size="sm">
               <User className="mr-2 h-4 w-4" />
               Configuración de Perfil

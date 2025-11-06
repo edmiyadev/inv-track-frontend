@@ -17,7 +17,7 @@ export default function UsersPage() {
               Exportar
             </Button>
             <Button asChild>
-              <Link href="/dashboard/users/new">
+              <Link href="/users/new">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Agregar Usuario
               </Link>

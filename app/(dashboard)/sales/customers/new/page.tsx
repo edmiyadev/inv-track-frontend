@@ -11,11 +11,11 @@ export default function NewCustomerPage() {
   const handleSubmit = async (data: CustomerFormData) => {
     console.log("[v0] Creating customer:", data)
     await new Promise((resolve) => setTimeout(resolve, 1000))
-    router.push("/dashboard/sales")
+    router.push("/sales")
   }
 
   const handleCancel = () => {
-    router.push("/dashboard/sales")
+    router.push("/sales")
   }
 
   return (

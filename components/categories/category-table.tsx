@@ -133,13 +133,13 @@ export function CategoryTable() {
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/categories/${category.id}`}>
+                          <Link href={`/categories/${category.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
                             Ver Detalles
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/categories/${category.id}/edit`}>
+                          <Link href={`/categories/${category.id}/edit`}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </Link>

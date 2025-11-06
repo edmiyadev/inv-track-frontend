@@ -12,7 +12,7 @@ export default function SuppliersPage() {
         description="Gestiona los proveedores de tu inventario"
         actions={
           <Button asChild>
-            <Link href="/dashboard/suppliers/new">
+            <Link href="/suppliers/new">
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Proveedor
             </Link>
