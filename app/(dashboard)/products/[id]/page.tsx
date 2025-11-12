@@ -216,7 +216,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <div className="mt-1 flex items-center gap-2">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <Link 
-                        href={`/dashboard/categories/${category.id}`}
+                        href={`/categories/${category.id}`}
                         className="text-base hover:underline"
                       >
                         {category.name}
@@ -236,7 +236,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <div className="mt-1 flex items-center gap-2">
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       <Link 
-                        href={`/dashboard/suppliers/${supplier.id}`}
+                        href={`/suppliers/${supplier.id}`}
                         className="text-base hover:underline"
                       >
                         {supplier.name}

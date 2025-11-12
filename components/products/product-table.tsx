@@ -148,7 +148,7 @@ export function ProductTable() {
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell className="font-mono text-sm text-muted-foreground">{product.sku}</TableCell>
-                  <TableCell className="max-w-xs truncate text-muted-foreground">{product.description || '-'}</TableCell>
+                  <TableCell className="max-w-[200px] truncate text-muted-foreground">{product.description || '-'}</TableCell>
                   <TableCell className="text-right">${parseFloat(product.price).toFixed(2)}</TableCell>
                   <TableCell className="text-right">{product.stock_quantity}</TableCell>
                   <TableCell>{getStatusBadge(product.stock_quantity, product.reorder_point)}</TableCell>

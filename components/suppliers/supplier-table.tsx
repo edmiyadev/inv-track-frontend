@@ -117,7 +117,7 @@ export function SupplierTable() {
             ) : (
               suppliers.map((supplier) => (
                 <TableRow key={supplier.id}>
-                  <TableCell className="font-medium">{supplier.name}</TableCell>
+                  <TableCell className="font-medium max-w-[200px] truncate">{supplier.name}</TableCell>
                   <TableCell className="font-mono text-sm text-muted-foreground">{supplier.rnc}</TableCell>
                   <TableCell>
                     <div className="space-y-1">
@@ -134,7 +134,7 @@ export function SupplierTable() {
                   <TableCell>
                     <div className="flex items-start gap-2 max-w-xs">
                       <MapPin className="h-3 w-3 text-muted-foreground mt-1 shrink-0" />
-                      <span className="text-sm text-muted-foreground line-clamp-2">{supplier.address}</span>
+                      <span className="text-sm max-w-[150px] truncate text-muted-foreground line-clamp-2">{supplier.address}</span>
                     </div>
                   </TableCell>
                   <TableCell>
