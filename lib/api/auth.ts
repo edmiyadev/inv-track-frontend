@@ -14,8 +14,9 @@ export const authApi = {
     return apiClient.post('/auth/logout', {}, token)
   },
 
+  // Obtener perfil del usuario con roles y permisos
   getProfile: async (token: string): Promise<User> => {
-    return apiClient.get<User>('/api/user', token)
+    return apiClient.get<User>('/user', token)
   },
 
   verifyToken: async (token: string): Promise<boolean> => {

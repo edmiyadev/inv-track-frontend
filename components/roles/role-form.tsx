@@ -183,8 +183,11 @@ export function RoleForm({ mode, defaultValues, onSubmit }: RoleFormProps) {
     const module = permissionModules.find((m) => m.key === moduleKey)
     if (!module) return
 
+    // Type-safe access to permissions
+    const modulePermissions = permissions[moduleKey as keyof typeof permissions] as Record<string, boolean> | undefined
+    
     const allChecked = module.permissions.every(
-      (p) => permissions[moduleKey as keyof typeof permissions]?.[p.key as keyof any],
+      (p) => modulePermissions?.[p.key] ?? false,
     )
 
     module.permissions.forEach((p) => {

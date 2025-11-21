@@ -36,10 +36,11 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ isLoading: true, error: null })
           
-          const response = await authApi.login(credentials)
+          const response = await authApi.login(credentials)          
+          const userWithPermissions = await authApi.getProfile(response.data.access_token)
           
           set({
-            user: response.data.user,
+            user: userWithPermissions,
             accessToken: response.data.access_token,
             isAuthenticated: true,
             isLoading: false,

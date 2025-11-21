@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider"
 import { QueryProvider } from "@/components/providers/query-provider"
 import { Suspense } from "react"
 import { AuthInitializer } from "@/components/auth/auth-initializer"
+import { AbilityProvider } from "@/lib/casl"
 
 export const metadata: Metadata = {
   title: "Inventory Management System",
@@ -21,12 +22,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>
           <QueryProvider>
             <ThemeProvider defaultTheme="dark" storageKey="inventory-theme">
-              <AuthInitializer>{children}</AuthInitializer>
+              <AuthInitializer>
+                <AbilityProvider>
+                  {children}
+                </AbilityProvider>
+              </AuthInitializer>
             </ThemeProvider>
           </QueryProvider>
         </Suspense>

@@ -1,3 +1,31 @@
+// Permission Type (Spatie Laravel Permission)
+export interface Permission {
+  id: number
+  name: string // formato: "resource.action" (ej: "products.create")
+  guard_name: string
+  created_at: string
+  updated_at: string
+  pivot?: {
+    role_id: number
+    permission_id: number
+  }
+}
+
+// Role Type (Spatie Laravel Permission)
+export interface Role {
+  id: number
+  name: string
+  guard_name: string
+  created_at: string
+  updated_at: string
+  pivot?: {
+    model_type: string
+    model_id: number
+    role_id: number
+  }
+  permissions: Permission[]
+}
+
 export interface User {
   id: number
   name: string
@@ -6,6 +34,7 @@ export interface User {
   email_verified_at: string | null
   created_at: string
   updated_at: string
+  roles?: Role[]
 }
 
 export interface LoginCredentials {

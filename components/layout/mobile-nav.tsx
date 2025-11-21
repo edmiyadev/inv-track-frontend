@@ -32,41 +32,45 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { useFilteredNavigation } from "@/hooks/use-filtered-navigation"
 
 // Grupos de navegación (mismo que sidebar)
 const navigationGroups = [
   {
     name: "Dashboard",
     items: [
-      { name: "Panel Principal", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Panel Principal", href: "/dashboard", icon: LayoutDashboard, permission: "Dashboard" as const },
     ],
   },
   {
     name: "Operaciones",
     icon: ShoppingBag,
+    isCollapsible: true,
     items: [
-      { name: "Compras", href: "/purchasing", icon: ShoppingCart },
-      { name: "Ventas", href: "/sales", icon: DollarSign },
+      { name: "Compras", href: "/purchasing", icon: ShoppingCart, permission: "Purchase" as const },
+      { name: "Ventas", href: "/sales", icon: DollarSign, permission: "Sale" as const },
     ],
   },
   {
     name: "Inventario",
     icon: Warehouse,
+    isCollapsible: true,
     items: [
-      { name: "Productos", href: "/products", icon: Package },
-      { name: "Categorías", href: "/categories", icon: FolderTree },
-      { name: "Proveedores", href: "/suppliers", icon: Truck },
-      { name: "Stock", href: "/inventory", icon: Warehouse },
-      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft },
+      { name: "Productos", href: "/products", icon: Package, permission: "Product" as const },
+      { name: "Categorías", href: "/categories", icon: FolderTree, permission: "Category" as const },
+      { name: "Proveedores", href: "/suppliers", icon: Truck, permission: "Supplier" as const },
+      { name: "Stock", href: "/inventory", icon: Warehouse, permission: "Inventory" as const },
+      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "Inventory" as const },
     ],
   },
   {
     name: "Configuración",
     icon: Settings,
+    isCollapsible: true,
     items: [
-      { name: "Usuarios", href: "/users", icon: Users },
-      { name: "Roles y Permisos", href: "/users/roles", icon: Shield },
-      { name: "Preferencias", href: "/settings", icon: UserCog },
+      { name: "Usuarios", href: "/users", icon: Users, permission: "User" as const },
+      { name: "Roles y Permisos", href: "/users/roles", icon: Shield, permission: "Role" as const },
+      { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
     ],
   },
 ]
@@ -77,6 +81,9 @@ export function MobileNav() {
   const [openGroups, setOpenGroups] = useState<string[]>(["Dashboard", "Operaciones", "Inventario", "Configuración"])
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
+
+  // Filtrar navegación basada en permisos del usuario
+  const filteredGroups = useFilteredNavigation(navigationGroups)
 
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || "U"
 
@@ -112,9 +119,13 @@ export function MobileNav() {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3 space-y-2">
-          {navigationGroups.map((group) => {
-            // Si el grupo solo tiene un item (Dashboard), renderizarlo directamente
-            if (group.items.length === 1) {
+          {filteredGroups.map((group) => {
+            // Verificar si el grupo debe ser siempre colapsable
+            const shouldBeCollapsible = (group as any).isCollapsible === true
+            
+            // Si el grupo debe ser colapsable O tiene más de un item, renderizar como grupo
+            if (!shouldBeCollapsible && group.items.length === 1) {
+              // Solo para items individuales que NO son parte de un grupo colapsable
               const item = group.items[0]
               const isActive = pathname === item.href
               return (

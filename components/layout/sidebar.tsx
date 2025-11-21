@@ -40,41 +40,39 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { useFilteredNavigation } from "@/hooks/use-filtered-navigation"
 
 // Grupos de navegación
 const navigationGroups = [
   {
-    name: "Dashboard",
-    items: [
-      { name: "Panel Principal", href: "/dashboard", icon: LayoutDashboard },
-    ],
-  },
-  {
     name: "Operaciones",
     icon: ShoppingBag,
+    isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
-      { name: "Compras", href: "/purchasing", icon: ShoppingCart },
-      { name: "Ventas", href: "/sales", icon: DollarSign },
+      { name: "Compras", href: "/purchasing", icon: ShoppingCart, permission: "Purchase" as const },
+      { name: "Ventas", href: "/sales", icon: DollarSign, permission: "Sale" as const },
     ],
   },
   {
     name: "Inventario",
     icon: Warehouse,
+    isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
-      { name: "Productos", href: "/products", icon: Package },
-      { name: "Categorías", href: "/categories", icon: FolderTree },
-      { name: "Proveedores", href: "/suppliers", icon: Truck },
-      { name: "Stock", href: "/inventory", icon: Warehouse },
-      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft },
+      { name: "Productos", href: "/products", icon: Package, permission: "Product" as const },
+      { name: "Categorías", href: "/categories", icon: FolderTree, permission: "Category" as const },
+      { name: "Proveedores", href: "/suppliers", icon: Truck, permission: "Supplier" as const },
+      { name: "Stock", href: "/inventory", icon: Warehouse, permission: "Inventory" as const },
+      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "Inventory" as const },
     ],
   },
   {
     name: "Configuración",
     icon: Settings,
+    isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
-      { name: "Usuarios", href: "/users", icon: Users },
-      { name: "Roles y Permisos", href: "/users/roles", icon: Shield },
-      { name: "Preferencias", href: "/settings", icon: UserCog },
+      { name: "Usuarios", href: "/users", icon: Users, permission: "User" as const },
+      { name: "Roles y Permisos", href: "/users/roles", icon: Shield, permission: "Role" as const },
+      { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
     ],
   },
 ]
@@ -85,6 +83,9 @@ export function Sidebar() {
   const [openGroups, setOpenGroups] = useState<string[]>(["Dashboard", "Operaciones", "Inventario", "Configuración"])
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
+
+  // Filtrar navegación basada en permisos del usuario
+  const filteredGroups = useFilteredNavigation(navigationGroups)
 
   const userInitial = user?.name?.charAt(0)?.toUpperCase() || "U"
 
@@ -123,9 +124,29 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-2">
-        {navigationGroups.map((group) => {
-          // Si el grupo solo tiene un item (Dashboard), renderizarlo directamente
-          if (group.items.length === 1) {
+        <Link
+          key={"Dashboard"}
+          href={"/dashboard"}
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+            pathname === "/dashboard"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+            collapsed && "justify-center",
+          )}
+          title={collapsed ? "Panel Principal" : undefined}
+        >
+          <LayoutDashboard className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>{"Panel Principal"}</span>}
+        </Link>
+
+        {filteredGroups.map((group) => {
+          // Verificar si el grupo debe ser siempre colapsable
+          const shouldBeCollapsible = (group as any).isCollapsible === true
+          
+          // Si el grupo debe ser colapsable O tiene más de un item, renderizar como grupo
+          if (!shouldBeCollapsible && group.items.length === 1) {
+            // Solo para items individuales que NO son parte de un grupo colapsable
             const item = group.items[0]
             const isActive = pathname === item.href
             return (
@@ -148,7 +169,7 @@ export function Sidebar() {
           }
 
           // Grupos colapsables
-          const hasActiveItem = group.items.some(item => 
+          const hasActiveItem = group.items.some(item =>
             pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
           )
           const isOpen = openGroups.includes(group.name)
@@ -190,8 +211,8 @@ export function Sidebar() {
                   variant="ghost"
                   className={cn(
                     "w-full justify-between px-3 py-2.5 h-auto text-sm font-medium",
-                    hasActiveItem 
-                      ? "text-foreground" 
+                    hasActiveItem
+                      ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -199,11 +220,11 @@ export function Sidebar() {
                     {group.icon && <group.icon className="h-5 w-5 shrink-0" />}
                     <span>{group.name}</span>
                   </div>
-                  <ChevronDown 
+                  <ChevronDown
                     className={cn(
                       "h-4 w-4 transition-transform shrink-0",
                       isOpen && "rotate-180"
-                    )} 
+                    )}
                   />
                 </Button>
               </CollapsibleTrigger>
