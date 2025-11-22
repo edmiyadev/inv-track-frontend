@@ -33,17 +33,27 @@ export type ProductFormData = z.infer<typeof productFormSchema>
 // User Form Validation Schema
 export const userFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name is too long"),
+  username: z.string().min(3, "Username must be at least 3 characters").max(50, "Username is too long"),
   email: z.string().email("Please enter a valid email address"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number")
+    // .min(8, "Password must be at least 8 characters")
+    // .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    // .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    // .regex(/[0-9]/, "Password must contain at least one number")
     .optional()
     .or(z.literal("")),
+  password_confirmation: z.string().optional().or(z.literal("")),
   role: z.enum(["admin", "manager", "staff", "viewer"]),
   status: z.enum(["active", "suspended"]).default("active"),
+}).refine((data) => {
+  if (data.password && data.password !== data.password_confirmation) {
+    return false
+  }
+  return true
+}, {
+  message: "Passwords do not match",
+  path: ["password_confirmation"],
 })
 
 export type UserFormData = z.infer<typeof userFormSchema>

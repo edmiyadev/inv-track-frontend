@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -12,14 +13,18 @@ import { Switch } from "@/components/ui/switch"
 import { USER_ROLES } from "@/lib/constants"
 import { userFormSchema, type UserFormData } from "@/lib/validations"
 import { Loader2, Eye, EyeOff, Shield, User, Mail, Lock } from "lucide-react"
+import { useAuthStore } from "@/lib/store/auth"
+import { usersApi } from "@/lib/api/users"
 
 interface UserFormProps {
   mode: "create" | "edit"
+  userId?: number
   defaultValues?: Partial<UserFormData>
-  onSubmit?: (data: UserFormData) => Promise<void>
 }
 
-export function UserForm({ mode, defaultValues, onSubmit }: UserFormProps) {
+export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
+  const router = useRouter()
+  const accessToken = useAuthStore((state) => state.accessToken)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -42,9 +47,29 @@ export function UserForm({ mode, defaultValues, onSubmit }: UserFormProps) {
   const selectedRole = watch("role")
 
   const handleFormSubmit = async (data: UserFormData) => {
+    if (!accessToken) return
+
     setIsSubmitting(true)
     try {
-      await onSubmit?.(data)
+      if (mode === "create") {
+        await usersApi.create(data, accessToken)
+      } else {
+        if (!userId) return
+
+        // Remove password fields if they are empty
+        const updateData = { ...data }
+        if (!updateData.password) {
+          delete updateData.password
+          delete updateData.password_confirmation
+        }
+
+        await usersApi.update(userId, updateData, accessToken)
+      }
+      router.push("/users")
+      router.refresh()
+    } catch (error) {
+      console.error("Error saving user:", error)
+      alert("Hubo un error al guardar el usuario. Por favor intente nuevamente.")
     } finally {
       setIsSubmitting(false)
     }
@@ -52,10 +77,10 @@ export function UserForm({ mode, defaultValues, onSubmit }: UserFormProps) {
 
   const getRoleDescription = (role: string) => {
     const descriptions = {
-      admin: "Full system access including user management and system settings",
-      manager: "Manage products, inventory, and view reports. Cannot manage users.",
-      staff: "Update inventory and process orders. Limited access to settings.",
-      viewer: "Read-only access to inventory data. Cannot make changes.",
+      admin: "Acceso total al sistema, incluyendo gestión de usuarios y configuraciones.",
+      manager: "Gestionar productos, inventario y ver reportes. No puede gestionar usuarios.",
+      staff: "Actualizar inventario y procesar órdenes. Acceso limitado a configuraciones.",
+      viewer: "Acceso de solo lectura a datos de inventario. No puede realizar cambios.",
     }
     return descriptions[role as keyof typeof descriptions] || ""
   }
@@ -64,65 +89,86 @@ export function UserForm({ mode, defaultValues, onSubmit }: UserFormProps) {
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>User Information</CardTitle>
-          <CardDescription>Enter the user details and assign appropriate role</CardDescription>
+          <CardTitle>Información del Usuario</CardTitle>
+          <CardDescription>Ingrese los detalles del usuario y asigne el rol apropiado</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">
                 <User className="mr-1 inline h-4 w-4" />
-                Full Name <span className="text-destructive">*</span>
+                Nombre Completo <span className="text-destructive">*</span>
               </Label>
-              <Input id="name" placeholder="Enter full name" {...register("name")} />
+              <Input id="name" placeholder="Ingrese nombre completo" {...register("name")} />
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="username">
+                <User className="mr-1 inline h-4 w-4" />
+                Nombre de Usuario <span className="text-destructive">*</span>
+              </Label>
+              <Input id="username" placeholder="Ingrese nombre de usuario" {...register("username")} />
+              {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">
                 <Mail className="mr-1 inline h-4 w-4" />
-                Email Address <span className="text-destructive">*</span>
+                Correo Electrónico <span className="text-destructive">*</span>
               </Label>
-              <Input id="email" type="email" placeholder="user@inventory.com" {...register("email")} />
+              <Input id="email" type="email" placeholder="usuario@ejemplo.com" {...register("email")} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
           </div>
 
-          {mode === "create" && (
-            <div className="space-y-2">
-              <Label htmlFor="password">
-                <Lock className="mr-1 inline h-4 w-4" />
-                Password <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter secure password"
-                  {...register("password")}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-              <p className="text-xs text-muted-foreground">
-                Must be at least 8 characters with uppercase, lowercase, and numbers
-              </p>
+          <div className="space-y-2">
+            <Label htmlFor="password">
+              <Lock className="mr-1 inline h-4 w-4" />
+              Contraseña {mode === 'edit' && <span className="text-muted-foreground font-normal">(Dejar en blanco para mantener actual)</span>} {mode === 'create' && <span className="text-destructive">*</span>}
+            </Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder={mode === 'create' ? "Ingrese contraseña segura" : "Nueva contraseña (opcional)"}
+                {...register("password")}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
             </div>
-          )}
+            {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+            <p className="text-xs text-muted-foreground">
+              Debe tener al menos 8 caracteres
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password_confirmation">
+              <Lock className="mr-1 inline h-4 w-4" />
+              Confirmar Contraseña {mode === 'create' && <span className="text-destructive">*</span>}
+            </Label>
+            <Input
+              id="password_confirmation"
+              type="password"
+              placeholder="Confirme la contraseña"
+              {...register("password_confirmation")}
+            />
+            {errors.password_confirmation && <p className="text-sm text-destructive">{errors.password_confirmation.message}</p>}
+          </div>
 
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div className="space-y-0.5">
-              <Label htmlFor="status">Account Status</Label>
+              <Label htmlFor="status">Estado de la Cuenta</Label>
               <p className="text-sm text-muted-foreground">
-                {status === "active" ? "User can access the system" : "User is suspended"}
+                {status === "active" ? "El usuario puede acceder al sistema" : "El usuario está suspendido"}
               </p>
             </div>
             <Switch
@@ -138,21 +184,21 @@ export function UserForm({ mode, defaultValues, onSubmit }: UserFormProps) {
         <CardHeader>
           <CardTitle>
             <Shield className="mr-2 inline h-5 w-5" />
-            Role & Permissions
+            Rol y Permisos
           </CardTitle>
-          <CardDescription>Assign a role to determine user access level</CardDescription>
+          <CardDescription>Asigne un rol para determinar el nivel de acceso del usuario</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="role">
-              User Role <span className="text-destructive">*</span>
+              Rol de Usuario <span className="text-destructive">*</span>
             </Label>
             <Select
               defaultValue={defaultValues?.role || "viewer"}
               onValueChange={(value) => setValue("role", value as any)}
             >
               <SelectTrigger id="role">
-                <SelectValue placeholder="Select a role" />
+                <SelectValue placeholder="Seleccione un rol" />
               </SelectTrigger>
               <SelectContent>
                 {USER_ROLES.map((role) => (
@@ -167,7 +213,7 @@ export function UserForm({ mode, defaultValues, onSubmit }: UserFormProps) {
 
           <div className="rounded-lg border border-border bg-muted/50 p-4">
             <p className="mb-2 text-sm font-medium">
-              Selected Role: {USER_ROLES.find((r) => r.value === selectedRole)?.label}
+              Rol Seleccionado: {USER_ROLES.find((r) => r.value === selectedRole)?.label}
             </p>
             <p className="text-sm text-muted-foreground">{getRoleDescription(selectedRole)}</p>
           </div>
@@ -175,14 +221,15 @@ export function UserForm({ mode, defaultValues, onSubmit }: UserFormProps) {
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" disabled={isSubmitting}>
-          Cancel
+        <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => router.back()}>
+          Cancelar
         </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {mode === "create" ? "Create User" : "Save Changes"}
+          {mode === "create" ? "Crear Usuario" : "Guardar Cambios"}
         </Button>
       </div>
     </form>
   )
 }
+

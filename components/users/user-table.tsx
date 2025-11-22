@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
+import { useQuery } from "@tanstack/react-query"
 import { MoreHorizontal, Pencil, Trash2, Mail, Ban, CheckCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,78 +14,78 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import type { User } from "@/types"
-
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@inventory.com",
-    role: "admin",
-    status: "active",
-    createdAt: new Date("2024-01-15"),
-    lastLogin: new Date(),
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane.smith@inventory.com",
-    role: "manager",
-    status: "active",
-    createdAt: new Date("2024-02-20"),
-    lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: "3",
-    name: "Mike Johnson",
-    email: "mike.johnson@inventory.com",
-    role: "staff",
-    status: "active",
-    createdAt: new Date("2024-03-10"),
-    lastLogin: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-  {
-    id: "4",
-    name: "Sarah Williams",
-    email: "sarah.williams@inventory.com",
-    role: "viewer",
-    status: "suspended",
-    createdAt: new Date("2024-04-05"),
-    lastLogin: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-  },
-]
+import { useAuthStore } from "@/lib/store/auth"
+import { usersApi } from "@/lib/api/users"
+import { PaginationControls } from "@/components/shared/pagination-controls"
+import type { User } from "@/lib/api/types"
 
 export function UserTable() {
-  const [users] = useState<User[]>(mockUsers)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const accessToken = useAuthStore((state) => state.accessToken)
 
-  const getRoleBadge = (role: User["role"]) => {
-    const variants = {
-      admin: { variant: "default" as const, label: "Administrator" },
-      manager: { variant: "secondary" as const, label: "Manager" },
-      staff: { variant: "outline" as const, label: "Staff" },
-      viewer: { variant: "outline" as const, label: "Viewer" },
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['users', currentPage, itemsPerPage],
+    queryFn: () => usersApi.getAll(accessToken!, currentPage, itemsPerPage),
+    enabled: !!accessToken,
+    staleTime: 30000,
+  })
+
+  const users = data?.data || []
+  // Pagination data is currently missing from the API response structure provided
+  // const paginationData = data?.meta 
+
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!accessToken || !userToDelete) return
+
+    try {
+      setIsDeleting(true)
+      await usersApi.delete(userToDelete.id, accessToken)
+      await refetch()
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
+    } catch (err) {
+      console.error('Error deleting user:', err)
+      alert('Error al eliminar el usuario')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const getRoleBadge = (roles: User["roles"]) => {
+    const roleName = roles && roles.length > 0 ? roles[0].name : 'viewer'
+
+    const variants: Record<string, { variant: "default" | "secondary" | "outline" | "destructive", label: string }> = {
+      admin: { variant: "default", label: "Administrador" },
+      manager: { variant: "secondary", label: "Gerente" },
+      staff: { variant: "outline", label: "Personal" },
+      viewer: { variant: "outline", label: "Visualizador" },
     }
 
-    const config = variants[role]
+    const config = variants[roleName] || variants.viewer
     return (
       <Badge variant={config.variant} className="font-normal">
         {config.label}
-      </Badge>
-    )
-  }
-
-  const getStatusBadge = (status: User["status"]) => {
-    return status === "active" ? (
-      <Badge variant="default" className="bg-success text-success-foreground font-normal">
-        <CheckCircle className="mr-1 h-3 w-3" />
-        Active
-      </Badge>
-    ) : (
-      <Badge variant="destructive" className="font-normal">
-        <Ban className="mr-1 h-3 w-3" />
-        Suspended
       </Badge>
     )
   }
@@ -94,91 +96,148 @@ export function UserTable() {
       .map((n) => n[0])
       .join("")
       .toUpperCase()
+      .slice(0, 2)
   }
 
-  const getTimeAgo = (date: Date) => {
-    const hours = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60))
-    if (hours < 1) return "Just now"
-    if (hours < 24) return `${hours}h ago`
-    const days = Math.floor(hours / 24)
-    if (days < 7) return `${days}d ago`
-    return date.toLocaleDateString()
+  if (error) {
+    return (
+      <div className="rounded-lg border border-destructive bg-destructive/10 p-8">
+        <p className="text-center text-destructive">
+          {error instanceof Error ? error.message : 'Error al cargar usuarios'}
+        </p>
+      </div>
+    )
+  }
+
+  if (!isLoading && users.length === 0) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-8">
+        <p className="text-center text-muted-foreground">No hay usuarios disponibles</p>
+      </div>
+    )
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>User</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Login</TableHead>
-            <TableHead className="w-[70px]"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                      {getInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="font-medium">{user.name}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-muted-foreground">{user.email}</TableCell>
-              <TableCell>{getRoleBadge(user.role)}</TableCell>
-              <TableCell>{getStatusBadge(user.status)}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {user.lastLogin ? getTimeAgo(user.lastLogin) : "Never"}
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Edit User
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Mail className="mr-2 h-4 w-4" />
-                      Send Invite
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {user.status === "active" ? (
-                      <DropdownMenuItem className="text-warning">
-                        <Ban className="mr-2 h-4 w-4" />
-                        Suspend User
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem className="text-success">
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Activate User
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem className="text-destructive">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete User
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+    <div className="space-y-4">
+      <div className="rounded-lg border border-border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Usuario</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Fecha Registro</TableHead>
+              <TableHead className="w-[70px]"></TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-32 text-center">
+                  <div className="flex items-center justify-center">
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                    <p className="ml-3 text-muted-foreground">Cargando usuarios...</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                          {getInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">{user.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                  <TableCell>{getRoleBadge(user.roles)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Abrir menú</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link href={`/users/${user.id}`}>
+                            <Mail className="mr-2 h-4 w-4" />
+                            Ver Detalles
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/users/${user.id}/edit`}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDeleteClick(user)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Pagination disabled as API response structure doesn't include pagination data yet
+      {paginationData && (
+        <PaginationControls
+          currentPage={paginationData.current_page}
+          totalPages={paginationData.last_page}
+          totalItems={paginationData.total}
+          itemsPerPage={paginationData.per_page}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={(value) => {
+            setItemsPerPage(value)
+            setCurrentPage(1)
+          }}
+          isLoading={isLoading}
+        />
+      )} 
+      */}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario
+              <strong> {userToDelete?.name}</strong> del sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
+

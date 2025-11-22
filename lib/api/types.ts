@@ -37,6 +37,38 @@ export interface User {
   roles?: Role[]
 }
 
+export interface CreateUserData {
+  name: string
+  username: string
+  email: string
+  password?: string
+  password_confirmation?: string
+  role: string
+  status: "active" | "suspended"
+}
+
+export interface UpdateUserData {
+  name?: string
+  username?: string
+  email?: string
+  password?: string
+  password_confirmation?: string
+  role?: string
+  status?: "active" | "suspended"
+}
+
+export interface UsersResponse {
+  status: string
+  message: string
+  data: User[]
+}
+
+export interface UserResponse {
+  status: string
+  message: string
+  data: User
+}
+
 export interface LoginCredentials {
   username: string
   password: string
