@@ -1,130 +1,58 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { roleFormSchema, type RoleFormData } from "@/lib/validations"
-import {
-  Loader2,
-  Shield,
-  LayoutDashboard,
-  Package,
-  Warehouse,
-  Users,
-  Settings,
-  FileText,
-  ShoppingCart,
-  TrendingUp,
-} from "lucide-react"
+import { Loader2, Shield, Save } from "lucide-react"
+import { useAuthStore } from "@/lib/store/auth"
+import { rolesApi } from "@/lib/api/roles"
+import { permissionsApi } from "@/lib/api/permissions"
+import { Permission } from "@/lib/api/types"
+
+const roleFormSchema = z.object({
+  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+  permissions: z.array(z.string()).min(1, "Debe seleccionar al menos un permiso"),
+})
+
+type RoleFormData = z.infer<typeof roleFormSchema>
 
 interface RoleFormProps {
   mode: "create" | "edit"
+  roleId?: number
   defaultValues?: Partial<RoleFormData>
-  onSubmit?: (data: RoleFormData) => Promise<void>
 }
 
-const permissionModules = [
-  {
-    key: "dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    permissions: [{ key: "view", label: "View Dashboard" }],
-  },
-  {
-    key: "products",
-    label: "Products",
-    icon: Package,
-    permissions: [
-      { key: "view", label: "View Products" },
-      { key: "create", label: "Create Products" },
-      { key: "edit", label: "Edit Products" },
-      { key: "delete", label: "Delete Products" },
-      { key: "export", label: "Export Products" },
-    ],
-  },
-  {
-    key: "inventory",
-    label: "Inventory",
-    icon: Warehouse,
-    permissions: [
-      { key: "view", label: "View Inventory" },
-      { key: "adjust", label: "Adjust Stock Levels" },
-      { key: "transfer", label: "Transfer Stock" },
-      { key: "viewHistory", label: "View Stock History" },
-    ],
-  },
-  {
-    key: "purchasing",
-    label: "Purchasing",
-    icon: ShoppingCart,
-    permissions: [
-      { key: "viewOrders", label: "View Purchase Orders" },
-      { key: "createOrders", label: "Create Purchase Orders" },
-      { key: "editOrders", label: "Edit Purchase Orders" },
-      { key: "deleteOrders", label: "Delete Purchase Orders" },
-      { key: "approveOrders", label: "Approve Purchase Orders" },
-      { key: "viewSuppliers", label: "View Suppliers" },
-      { key: "manageSuppliers", label: "Manage Suppliers" },
-      { key: "viewInvoices", label: "View Purchase Invoices" },
-      { key: "manageInvoices", label: "Manage Purchase Invoices" },
-    ],
-  },
-  {
-    key: "sales",
-    label: "Sales",
-    icon: TrendingUp,
-    permissions: [
-      { key: "viewOrders", label: "View Sales Orders" },
-      { key: "createOrders", label: "Create Sales Orders" },
-      { key: "editOrders", label: "Edit Sales Orders" },
-      { key: "deleteOrders", label: "Delete Sales Orders" },
-      { key: "viewCustomers", label: "View Customers" },
-      { key: "manageCustomers", label: "Manage Customers" },
-      { key: "viewInvoices", label: "View Sales Invoices" },
-      { key: "manageInvoices", label: "Manage Sales Invoices" },
-      { key: "manageShipments", label: "Manage Shipments" },
-    ],
-  },
-  {
-    key: "users",
-    label: "Users",
-    icon: Users,
-    permissions: [
-      { key: "view", label: "View Users" },
-      { key: "create", label: "Create Users" },
-      { key: "edit", label: "Edit Users" },
-      { key: "delete", label: "Delete Users" },
-      { key: "manageRoles", label: "Manage Roles" },
-    ],
-  },
-  {
-    key: "settings",
-    label: "Settings",
-    icon: Settings,
-    permissions: [
-      { key: "view", label: "View Settings" },
-      { key: "edit", label: "Edit Settings" },
-    ],
-  },
-  {
-    key: "reports",
-    label: "Reports",
-    icon: FileText,
-    permissions: [
-      { key: "view", label: "View Reports" },
-      { key: "export", label: "Export Reports" },
-    ],
-  },
-]
-
-export function RoleForm({ mode, defaultValues, onSubmit }: RoleFormProps) {
+export function RoleForm({ mode, roleId, defaultValues }: RoleFormProps) {
+  const router = useRouter()
+  const accessToken = useAuthStore((state) => state.accessToken)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Fetch permissions
+  const { data: permissionsData, isLoading: isLoadingPermissions } = useQuery({
+    queryKey: ["permissions"],
+    queryFn: () => permissionsApi.getAll(accessToken!),
+    enabled: !!accessToken,
+  })
+
+  const permissions = permissionsData?.data || []
+
+  // Group permissions by resource (e.g., "products", "users")
+  const groupedPermissions = permissions.reduce((acc, permission) => {
+    const [resource] = permission.name.split(".")
+    if (!acc[resource]) {
+      acc[resource] = []
+    }
+    acc[resource].push(permission)
+    return acc
+  }, {} as Record<string, Permission[]>)
 
   const {
     register,
@@ -132,162 +60,156 @@ export function RoleForm({ mode, defaultValues, onSubmit }: RoleFormProps) {
     formState: { errors },
     setValue,
     watch,
+    reset,
   } = useForm<RoleFormData>({
     resolver: zodResolver(roleFormSchema),
-    defaultValues: defaultValues || {
-      permissions: {
-        dashboard: { view: false },
-        products: { view: false, create: false, edit: false, delete: false, export: false },
-        inventory: { view: false, adjust: false, transfer: false, viewHistory: false },
-        purchasing: {
-          viewOrders: false,
-          createOrders: false,
-          editOrders: false,
-          deleteOrders: false,
-          approveOrders: false,
-          viewSuppliers: false,
-          manageSuppliers: false,
-          viewInvoices: false,
-          manageInvoices: false,
-        },
-        sales: {
-          viewOrders: false,
-          createOrders: false,
-          editOrders: false,
-          deleteOrders: false,
-          viewCustomers: false,
-          manageCustomers: false,
-          viewInvoices: false,
-          manageInvoices: false,
-          manageShipments: false,
-        },
-        users: { view: false, create: false, edit: false, delete: false, manageRoles: false },
-        settings: { view: false, edit: false },
-        reports: { view: false, export: false },
-      },
+    defaultValues: {
+      name: "",
+      permissions: [],
+      ...defaultValues,
     },
   })
 
-  const permissions = watch("permissions")
+  useEffect(() => {
+    if (defaultValues) {
+      reset({
+        name: defaultValues.name || "",
+        permissions: defaultValues.permissions || [],
+      })
+    }
+  }, [defaultValues, reset])
+
+  const selectedPermissions = watch("permissions")
+
+  const handlePermissionChange = (permissionName: string, checked: boolean) => {
+    if (checked) {
+      setValue("permissions", [...selectedPermissions, permissionName])
+    } else {
+      setValue(
+        "permissions",
+        selectedPermissions.filter((p) => p !== permissionName)
+      )
+    }
+  }
+
+  const handleSelectAllGroup = (resource: string, checked: boolean) => {
+    const groupPermissions = groupedPermissions[resource].map((p) => p.name)
+    if (checked) {
+      const newPermissions = Array.from(new Set([...selectedPermissions, ...groupPermissions]))
+      setValue("permissions", newPermissions)
+    } else {
+      setValue(
+        "permissions",
+        selectedPermissions.filter((p) => !groupPermissions.includes(p))
+      )
+    }
+  }
 
   const handleFormSubmit = async (data: RoleFormData) => {
+    if (!accessToken) return
+
     setIsSubmitting(true)
     try {
-      await onSubmit?.(data)
+      if (mode === "create") {
+        await rolesApi.create(data, accessToken)
+      } else {
+        if (!roleId) return
+        await rolesApi.update(roleId, data, accessToken)
+      }
+      router.push("/roles")
+      router.refresh()
+    } catch (error) {
+      console.error("Error saving role:", error)
+      alert("Hubo un error al guardar el rol. Por favor intente nuevamente.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleSelectAll = (moduleKey: string) => {
-    const module = permissionModules.find((m) => m.key === moduleKey)
-    if (!module) return
-
-    // Type-safe access to permissions
-    const modulePermissions = permissions[moduleKey as keyof typeof permissions] as Record<string, boolean> | undefined
-    
-    const allChecked = module.permissions.every(
-      (p) => modulePermissions?.[p.key] ?? false,
+  if (isLoadingPermissions) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     )
-
-    module.permissions.forEach((p) => {
-      setValue(`permissions.${moduleKey}.${p.key}` as any, !allChecked)
-    })
   }
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>
-            <Shield className="mr-2 inline h-5 w-5" />
-            Role Information
-          </CardTitle>
-          <CardDescription>Define the role name and description</CardDescription>
+          <CardTitle>Información del Rol</CardTitle>
+          <CardDescription>Defina el nombre del rol y sus permisos asociados</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">
-              Role Name <span className="text-destructive">*</span>
+              Nombre del Rol <span className="text-destructive">*</span>
             </Label>
-            <Input id="name" placeholder="e.g., Warehouse Manager" {...register("name")} />
+            <Input id="name" placeholder="Ej: Encargado de Inventario" {...register("name")} />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Describe the purpose and responsibilities of this role"
-              rows={3}
-              {...register("description")}
-            />
-            {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Permissions</CardTitle>
-          <CardDescription>Select the permissions for this role by module</CardDescription>
+          <CardTitle>
+            <Shield className="mr-2 inline h-5 w-5" />
+            Permisos del Sistema
+          </CardTitle>
+          <CardDescription>Seleccione los permisos que tendrá este rol</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {permissionModules.map((module) => {
-            const Icon = module.icon
-            const modulePermissions = permissions[module.key as keyof typeof permissions] as any
-            const allChecked = module.permissions.every((p) => modulePermissions?.[p.key])
+        <CardContent>
+          {errors.permissions && (
+            <p className="mb-4 text-sm text-destructive">{errors.permissions.message}</p>
+          )}
 
-            return (
-              <div key={module.key} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-5 w-5 text-muted-foreground" />
-                    <h4 className="font-medium">{module.label}</h4>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Object.entries(groupedPermissions).map(([resource, groupPermissions]) => {
+              const allGroupSelected = groupPermissions.every((p) => selectedPermissions.includes(p.name))
+
+              return (
+                <div key={resource} className="rounded-lg border p-4">
+                  <div className="mb-3 flex items-center gap-2 border-b pb-2">
+                    <Checkbox
+                      id={`group-${resource}`}
+                      checked={allGroupSelected}
+                      onCheckedChange={(checked) => handleSelectAllGroup(resource, checked as boolean)}
+                    />
+                    <Label htmlFor={`group-${resource}`} className="font-semibold capitalize cursor-pointer">
+                      {resource.replace("_", " ")}
+                    </Label>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleSelectAll(module.key)}
-                    className="h-8 text-xs"
-                  >
-                    {allChecked ? "Deselect All" : "Select All"}
-                  </Button>
+                  <div className="space-y-2">
+                    {groupPermissions.map((permission) => (
+                      <div key={permission.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={permission.name}
+                          checked={selectedPermissions.includes(permission.name)}
+                          onCheckedChange={(checked) => handlePermissionChange(permission.name, checked as boolean)}
+                        />
+                        <Label htmlFor={permission.name} className="text-sm font-normal cursor-pointer">
+                          {permission.name.split(".")[1] || permission.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-
-                <div className="ml-7 space-y-2 rounded-lg border border-border p-4">
-                  {module.permissions.map((permission) => (
-                    <div key={permission.key} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${module.key}-${permission.key}`}
-                        checked={modulePermissions?.[permission.key] || false}
-                        onCheckedChange={(checked) =>
-                          setValue(`permissions.${module.key}.${permission.key}` as any, checked as boolean)
-                        }
-                      />
-                      <Label
-                        htmlFor={`${module.key}-${permission.key}`}
-                        className="cursor-pointer text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        {permission.label}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="outline" disabled={isSubmitting}>
-          Cancel
+        <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => router.back()}>
+          Cancelar
         </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {mode === "create" ? "Create Role" : "Save Changes"}
+          <Save className="mr-2 h-4 w-4" />
+          {mode === "create" ? "Crear Rol" : "Guardar Cambios"}
         </Button>
       </div>
     </form>

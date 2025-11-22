@@ -26,6 +26,34 @@ export interface Role {
   permissions: Permission[]
 }
 
+export interface CreateRoleData {
+  name: string
+  permissions: string[]
+}
+
+export interface UpdateRoleData {
+  name?: string
+  permissions?: string[]
+}
+
+export interface RolesResponse {
+  status: string
+  message: string
+  data: Role[]
+}
+
+export interface RoleResponse {
+  status: string
+  message: string
+  data: Role
+}
+
+export interface PermissionsResponse {
+  status: string
+  message: string
+  data: Permission[]
+}
+
 export interface User {
   id: number
   name: string

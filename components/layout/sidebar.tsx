@@ -71,7 +71,7 @@ const navigationGroups = [
     isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
       { name: "Usuarios", href: "/users", icon: Users, permission: "User" as const },
-      { name: "Roles y Permisos", href: "/users/roles", icon: Shield, permission: "Role" as const },
+      { name: "Roles y Permisos", href: "/roles", icon: Shield, permission: "Role" as const },
       { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
     ],
   },
@@ -143,7 +143,7 @@ export function Sidebar() {
         {filteredGroups.map((group) => {
           // Verificar si el grupo debe ser siempre colapsable
           const shouldBeCollapsible = (group as any).isCollapsible === true
-          
+
           // Si el grupo debe ser colapsable O tiene más de un item, renderizar como grupo
           if (!shouldBeCollapsible && group.items.length === 1) {
             // Solo para items individuales que NO son parte de un grupo colapsable

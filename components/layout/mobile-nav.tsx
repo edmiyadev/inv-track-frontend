@@ -69,7 +69,7 @@ const navigationGroups = [
     isCollapsible: true,
     items: [
       { name: "Usuarios", href: "/users", icon: Users, permission: "User" as const },
-      { name: "Roles y Permisos", href: "/users/roles", icon: Shield, permission: "Role" as const },
+      { name: "Roles y Permisos", href: "/roles", icon: Shield, permission: "Role" as const },
       { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
     ],
   },
@@ -122,7 +122,7 @@ export function MobileNav() {
           {filteredGroups.map((group) => {
             // Verificar si el grupo debe ser siempre colapsable
             const shouldBeCollapsible = (group as any).isCollapsible === true
-            
+
             // Si el grupo debe ser colapsable O tiene más de un item, renderizar como grupo
             if (!shouldBeCollapsible && group.items.length === 1) {
               // Solo para items individuales que NO son parte de un grupo colapsable
@@ -147,7 +147,7 @@ export function MobileNav() {
             }
 
             // Grupos colapsables
-            const hasActiveItem = group.items.some(item => 
+            const hasActiveItem = group.items.some(item =>
               pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
             )
             const isOpen = openGroups.includes(group.name)
@@ -163,8 +163,8 @@ export function MobileNav() {
                     variant="ghost"
                     className={cn(
                       "w-full justify-between px-3 py-2.5 h-auto text-sm font-medium",
-                      hasActiveItem 
-                        ? "text-foreground" 
+                      hasActiveItem
+                        ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -172,11 +172,11 @@ export function MobileNav() {
                       {group.icon && <group.icon className="h-5 w-5 shrink-0" />}
                       <span>{group.name}</span>
                     </div>
-                    <ChevronDown 
+                    <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform shrink-0",
                         isOpen && "rotate-180"
-                      )} 
+                      )}
                     />
                   </Button>
                 </CollapsibleTrigger>
