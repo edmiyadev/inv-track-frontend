@@ -44,7 +44,7 @@ export const userFormSchema = z.object({
     .optional()
     .or(z.literal("")),
   password_confirmation: z.string().optional().or(z.literal("")),
-  role: z.enum(["admin", "manager", "staff", "viewer"]),
+  roles: z.array(z.number()).min(1, "Debe seleccionar al menos un rol"),
   status: z.enum(["active", "suspended"]).default("active"),
 }).refine((data) => {
   if (data.password && data.password !== data.password_confirmation) {

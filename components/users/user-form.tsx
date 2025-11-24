@@ -4,17 +4,18 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { USER_ROLES } from "@/lib/constants"
+import { Checkbox } from "@/components/ui/checkbox"
 import { userFormSchema, type UserFormData } from "@/lib/validations"
 import { Loader2, Eye, EyeOff, Shield, User, Mail, Lock } from "lucide-react"
 import { useAuthStore } from "@/lib/store/auth"
 import { usersApi } from "@/lib/api/users"
+import { rolesApi } from "@/lib/api/roles"
 
 interface UserFormProps {
   mode: "create" | "edit"
@@ -28,6 +29,15 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
+  // Fetch roles from API
+  const { data: rolesData, isLoading: isLoadingRoles } = useQuery({
+    queryKey: ["roles"],
+    queryFn: () => rolesApi.getAll(accessToken!),
+    enabled: !!accessToken,
+  })
+
+  const roles = rolesData?.data || []
+
   const {
     register,
     handleSubmit,
@@ -38,13 +48,21 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
     resolver: zodResolver(userFormSchema),
     defaultValues: {
       status: "active",
-      role: "viewer",
+      roles: [],
       ...defaultValues,
     },
   })
 
   const status = watch("status")
-  const selectedRole = watch("role")
+  const selectedRoles = watch("roles")
+
+  const handleRoleToggle = (roleId: number, checked: boolean) => {
+    if (checked) {
+      setValue("roles", [...selectedRoles, roleId])
+    } else {
+      setValue("roles", selectedRoles.filter((id) => id !== roleId))
+    }
+  }
 
   const handleFormSubmit = async (data: UserFormData) => {
     if (!accessToken) return
@@ -75,14 +93,12 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
     }
   }
 
-  const getRoleDescription = (role: string) => {
-    const descriptions = {
-      admin: "Acceso total al sistema, incluyendo gestión de usuarios y configuraciones.",
-      manager: "Gestionar productos, inventario y ver reportes. No puede gestionar usuarios.",
-      staff: "Actualizar inventario y procesar órdenes. Acceso limitado a configuraciones.",
-      viewer: "Acceso de solo lectura a datos de inventario. No puede realizar cambios.",
-    }
-    return descriptions[role as keyof typeof descriptions] || ""
+  if (isLoadingRoles) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -90,7 +106,7 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Información del Usuario</CardTitle>
-          <CardDescription>Ingrese los detalles del usuario y asigne el rol apropiado</CardDescription>
+          <CardDescription>Ingrese los detalles del usuario y asigne los roles apropiados</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -184,39 +200,63 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
         <CardHeader>
           <CardTitle>
             <Shield className="mr-2 inline h-5 w-5" />
-            Rol y Permisos
+            Roles y Permisos
           </CardTitle>
-          <CardDescription>Asigne un rol para determinar el nivel de acceso del usuario</CardDescription>
+          <CardDescription>Asigne uno o más roles para determinar el nivel de acceso del usuario</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="role">
-              Rol de Usuario <span className="text-destructive">*</span>
+            <Label>
+              Roles del Usuario <span className="text-destructive">*</span>
             </Label>
-            <Select
-              defaultValue={defaultValues?.role || "viewer"}
-              onValueChange={(value) => setValue("role", value as any)}
-            >
-              <SelectTrigger id="role">
-                <SelectValue placeholder="Seleccione un rol" />
-              </SelectTrigger>
-              <SelectContent>
-                {USER_ROLES.map((role) => (
-                  <SelectItem key={role.value} value={role.value}>
-                    {role.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
+            <div className="grid gap-3 md:grid-cols-2">
+              {roles.map((role) => (
+                <div
+                  key={role.id}
+                  className="flex items-start space-x-3 rounded-lg border border-border p-4 hover:bg-accent/50 transition-colors"
+                >
+                  <Checkbox
+                    id={`role-${role.id}`}
+                    checked={selectedRoles.includes(role.id)}
+                    onCheckedChange={(checked) => handleRoleToggle(role.id, checked as boolean)}
+                  />
+                  <div className="flex-1 space-y-1">
+                    <Label
+                      htmlFor={`role-${role.id}`}
+                      className="text-sm font-medium leading-none cursor-pointer"
+                    >
+                      {role.name}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      {role.permissions?.length || 0} permisos
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {errors.roles && <p className="text-sm text-destructive">{errors.roles.message}</p>}
           </div>
 
-          <div className="rounded-lg border border-border bg-muted/50 p-4">
-            <p className="mb-2 text-sm font-medium">
-              Rol Seleccionado: {USER_ROLES.find((r) => r.value === selectedRole)?.label}
-            </p>
-            <p className="text-sm text-muted-foreground">{getRoleDescription(selectedRole)}</p>
-          </div>
+          {selectedRoles.length > 0 && (
+            <div className="rounded-lg border border-border bg-muted/50 p-4">
+              <p className="mb-2 text-sm font-medium">
+                Roles Seleccionados: {selectedRoles.length}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {selectedRoles.map((roleId) => {
+                  const role = roles.find((r) => r.id === roleId)
+                  return role ? (
+                    <span
+                      key={role.id}
+                      className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground"
+                    >
+                      {role.name}
+                    </span>
+                  ) : null
+                })}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

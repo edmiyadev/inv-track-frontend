@@ -161,9 +161,9 @@ userFormSchema = {
   - `components/roles/roles-table.tsx` - Roles list table
   - `components/users/role-permissions-matrix.tsx` - Permissions reference matrix
 - **Pages**:
-  - List: `app/(dashboard)/users/roles/page.tsx`
-  - Create: `app/(dashboard)/users/roles/new/page.tsx`
-  - Edit: `app/(dashboard)/users/roles/[id]/page.tsx`
+  - List: `app/(dashboard)/roles/page.tsx`
+  - Create: `app/(dashboard)/roles/new/page.tsx`
+  - Edit: `app/(dashboard)/roles/[id]/page.tsx`
 
 ### Roles Table Structure
 

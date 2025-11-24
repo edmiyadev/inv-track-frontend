@@ -72,21 +72,23 @@ export function UserTable() {
     }
   }
 
-  const getRoleBadge = (roles: User["roles"]) => {
-    const roleName = roles && roles.length > 0 ? roles[0].name : 'viewer'
-
-    const variants: Record<string, { variant: "default" | "secondary" | "outline" | "destructive", label: string }> = {
-      admin: { variant: "default", label: "Administrador" },
-      manager: { variant: "secondary", label: "Gerente" },
-      staff: { variant: "outline", label: "Personal" },
-      viewer: { variant: "outline", label: "Visualizador" },
+  const getRoleBadges = (roles: User["roles"]) => {
+    if (!roles || roles.length === 0) {
+      return (
+        <Badge variant="outline" className="font-normal">
+          Sin rol
+        </Badge>
+      )
     }
 
-    const config = variants[roleName] || variants.viewer
     return (
-      <Badge variant={config.variant} className="font-normal">
-        {config.label}
-      </Badge>
+      <div className="flex flex-wrap gap-1">
+        {roles.map((role) => (
+          <Badge key={role.id} variant="secondary" className="font-normal">
+            {role.name}
+          </Badge>
+        ))}
+      </div>
     )
   }
 
@@ -154,7 +156,7 @@ export function UserTable() {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                  <TableCell>{getRoleBadge(user.roles)}</TableCell>
+                  <TableCell>{getRoleBadges(user.roles)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(user.created_at).toLocaleDateString()}
                   </TableCell>

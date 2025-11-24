@@ -72,7 +72,7 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
         name: user.name,
         username: user.username,
         email: user.email,
-        role: user.roles && user.roles.length > 0 ? (user.roles[0].name as any) : "viewer",
+        roles: user.roles?.map((role) => role.id) || [],
         status: "active", // Assuming active for now as status might not be in User type yet or handled differently
     }
 

@@ -71,7 +71,7 @@ export interface CreateUserData {
   email: string
   password?: string
   password_confirmation?: string
-  role: string
+  roles: number[]
   status: "active" | "suspended"
 }
 
@@ -81,7 +81,7 @@ export interface UpdateUserData {
   email?: string
   password?: string
   password_confirmation?: string
-  role?: string
+  roles?: number[]
   status?: "active" | "suspended"
 }
 
