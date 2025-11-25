@@ -48,7 +48,7 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
     resolver: zodResolver(userFormSchema),
     defaultValues: {
       status: "active",
-      roles: [],
+      roles: defaultValues?.roles || [],
       ...defaultValues,
     },
   })
@@ -69,8 +69,11 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
 
     setIsSubmitting(true)
     try {
+      let createdOrUpdatedUserId: number
+
       if (mode === "create") {
-        await usersApi.create(data, accessToken)
+        const response = await usersApi.create(data, accessToken)
+        createdOrUpdatedUserId = response.data.id
       } else {
         if (!userId) return
 
@@ -82,7 +85,16 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
         }
 
         await usersApi.update(userId, updateData, accessToken)
+        createdOrUpdatedUserId = userId
       }
+
+      // Update user roles via the dedicated endpoint
+      const roleNames = roles
+        .filter((role) => data.roles.includes(role.id))
+        .map((role) => role.name)
+
+      await usersApi.updateRoles(createdOrUpdatedUserId, roleNames, accessToken)
+
       router.push("/users")
       router.refresh()
     } catch (error) {

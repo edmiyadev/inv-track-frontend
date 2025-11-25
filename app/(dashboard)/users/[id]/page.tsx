@@ -212,7 +212,13 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
                                     <p className="text-sm font-medium text-muted-foreground">Rol Asignado</p>
                                 </div>
                                 <div className="mt-1">
-                                    {getRoleBadge(user.roles)}
+                                    {
+                                        user.roles?.map((role) => {
+                                            return <Badge key={role.id} variant={"default"} className="font-normal">
+                                                {role.name}
+                                            </Badge>;
+                                        })
+                                    }
                                 </div>
                             </div>
                         </CardContent>

@@ -88,7 +88,7 @@ export interface UpdateUserData {
 export interface UsersResponse {
   status: string
   message: string
-  data: User[]
+  data: PaginatedData<User>
 }
 
 export interface UserResponse {

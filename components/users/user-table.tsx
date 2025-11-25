@@ -46,9 +46,8 @@ export function UserTable() {
     staleTime: 30000,
   })
 
-  const users = data?.data || []
-  // Pagination data is currently missing from the API response structure provided
-  // const paginationData = data?.meta 
+  const users = data?.data.data || []
+  const paginationData = data?.data
 
   const handleDeleteClick = (user: User) => {
     setUserToDelete(user)
@@ -201,7 +200,6 @@ export function UserTable() {
         </Table>
       </div>
 
-      {/* Pagination disabled as API response structure doesn't include pagination data yet
       {paginationData && (
         <PaginationControls
           currentPage={paginationData.current_page}
@@ -215,8 +213,7 @@ export function UserTable() {
           }}
           isLoading={isLoading}
         />
-      )} 
-      */}
+      )}
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

@@ -31,4 +31,9 @@ export const usersApi = {
   delete: async (id: number, token: string): Promise<void> => {
     return apiClient.delete(`/settings/users/${id}`, token)
   },
+
+  // Actualizar roles de un usuario
+  updateRoles: async (id: number, roles: string[], token: string): Promise<UserResponse> => {
+    return apiClient.patch<UserResponse>(`/settings/users/${id}/roles`, { roles }, token)
+  },
 }
