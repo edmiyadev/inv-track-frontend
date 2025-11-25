@@ -20,6 +20,7 @@ import {
   UserCog,
   ChevronDown,
   Truck,
+  Building2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -58,6 +59,7 @@ const navigationGroups = [
     items: [
       { name: "Productos", href: "/products", icon: Package, permission: "Product" as const },
       { name: "Categorías", href: "/categories", icon: FolderTree, permission: "Category" as const },
+      { name: "Almacenes", href: "/warehouses", icon: Building2, permission: "Warehouse" as const },
       { name: "Proveedores", href: "/suppliers", icon: Truck, permission: "Supplier" as const },
       { name: "Stock", href: "/inventory", icon: Warehouse, permission: "Inventory" as const },
       { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "Inventory" as const },

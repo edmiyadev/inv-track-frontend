@@ -279,3 +279,40 @@ export interface UpdateSupplierData {
   address?: string | null
   is_active?: boolean
 }
+
+// Warehouse Types
+export interface Warehouse {
+  id: number
+  name: string
+  code: string
+  description: string | null
+  location: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface WarehousesResponse {
+  status: string
+  message: string
+  data: PaginatedData<Warehouse>
+}
+
+export interface WarehouseResponse {
+  status: string
+  message: string
+  data: Warehouse
+}
+
+export interface CreateWarehouseData {
+  name: string
+  code: string
+  description?: string | null
+  location?: string | null
+}
+
+export interface UpdateWarehouseData {
+  name?: string
+  code?: string
+  description?: string | null
+  location?: string | null
+}
