@@ -86,14 +86,13 @@ export const useAuthStore = create<AuthStore>()(
           return
         }
 
-        // Si ya tenemos un usuario y token en el store (persistido), considerarlo válido
-        if (user && accessToken) {
-          set({ isAuthenticated: true, isLoading: false })
-          return
-        }
-
         try {
-          set({ isLoading: true })
+          // Si no tenemos usuario cargado, mostramos loading.
+          // Si ya tenemos usuario (persistido), verificamos en "segundo plano" sin bloquear la UI
+          if (!user) {
+            set({ isLoading: true })
+          }
+
           const userData = await authApi.getProfile(accessToken)
           set({
             user: userData,
@@ -103,7 +102,7 @@ export const useAuthStore = create<AuthStore>()(
           })
         } catch (error) {
           console.warn('Check auth failed, clearing session:', error)
-          // En caso de error, limpiar la sesión
+          // En caso de error (token inválido, usuario borrado), limpiar la sesión
           set({
             user: null,
             accessToken: null,

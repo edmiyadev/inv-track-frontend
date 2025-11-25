@@ -1,8 +1,9 @@
 "use client"
 
 import { ReactNode } from 'react'
-import { useAbility } from '@/lib/casl'
+import { isAdmin, useAbility } from '@/lib/casl'
 import type { Actions, Subjects } from '@/lib/casl'
+import { useAuthStore } from '@/lib/store/auth'
 
 interface CanAccessProps {
   action: Actions
@@ -21,11 +22,16 @@ interface CanAccessProps {
  */
 export function CanAccess({ action, subject, children, fallback = null }: CanAccessProps) {
   const ability = useAbility()
-  
+  const user = useAuthStore((state) => state.user)
+
+  if (isAdmin(user)) {
+    return <>{children}</>;
+  }
+
   if (ability.can(action, subject)) {
     return <>{children}</>
   }
-  
+
   return <>{fallback}</>
 }
 

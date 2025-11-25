@@ -116,7 +116,6 @@ export function RoleTable() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Nombre</TableHead>
-                            <TableHead>Guard</TableHead>
                             <TableHead>Permisos</TableHead>
                             <TableHead>Fecha de Creación</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
@@ -138,7 +137,6 @@ export function RoleTable() {
                                             {role.name}
                                         </div>
                                     </TableCell>
-                                    <TableCell>{role.guard_name}</TableCell>
                                     <TableCell>
                                         <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
                                             {role.permissions?.length || 0} permisos

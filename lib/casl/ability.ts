@@ -6,7 +6,7 @@ import {
 import type { User, Permission } from "@/lib/api/types";
 
 // Define los tipos de acciones permitidas (mapeadas desde Laravel)
-export type Actions = "manage" | "view" | "create" | "edit" | "delete" | "viewAny";
+export type Actions = "manage" | "view" | "create" | "edit" | "delete" | "viewAny" | "syncRoles";
 
 // Define los tipos de recursos/entidades (subjects)
 export type Subjects =

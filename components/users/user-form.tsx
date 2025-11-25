@@ -16,6 +16,7 @@ import { Loader2, Eye, EyeOff, Shield, User, Mail, Lock } from "lucide-react"
 import { useAuthStore } from "@/lib/store/auth"
 import { usersApi } from "@/lib/api/users"
 import { rolesApi } from "@/lib/api/roles"
+import { CanAccess } from "../auth/can-access"
 
 interface UserFormProps {
   mode: "create" | "edit"
@@ -207,6 +208,8 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
           </div>
         </CardContent>
       </Card>
+      <CanAccess action="syncRoles" subject="User">
+
 
       <Card>
         <CardHeader>
@@ -271,6 +274,8 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
           )}
         </CardContent>
       </Card>
+      </CanAccess>
+
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" disabled={isSubmitting} onClick={() => router.back()}>
