@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { authApi } from '@/lib/api/auth'
+import { ApiError } from '@/lib/api/client'
 import type { User, LoginCredentials } from '@/lib/api/types'
 
 interface AuthStore {
@@ -66,7 +67,13 @@ export const useAuthStore = create<AuthStore>()(
             await authApi.logout(accessToken)
           }
         } catch (error) {
-          console.error('Logout error:', error)
+          // Ignorar errores 401 (Token expirado) o 405 (Method Not Allowed - posible error de config)
+          // ya que de todas formas vamos a limpiar la sesión local
+          if (error instanceof ApiError && (error.status === 401 || error.status === 405)) {
+            console.warn('Logout warning:', error.message)
+          } else {
+            console.error('Logout error:', error)
+          }
         } finally {
           set({
             user: null,

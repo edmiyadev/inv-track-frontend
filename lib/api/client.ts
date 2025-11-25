@@ -4,6 +4,18 @@ interface RequestOptions extends RequestInit {
   token?: string
 }
 
+export class ApiError extends Error {
+  status: number
+  statusText: string
+
+  constructor(message: string, status: number, statusText: string) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.statusText = statusText
+  }
+}
+
 class ApiClient {
   private baseURL: string
 
@@ -29,10 +41,19 @@ class ApiClient {
     const response = await fetch(`${this.baseURL}${endpoint}`, config)
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({
+      const errorData = await response.json().catch(() => ({
         message: response.statusText,
       }))
-      throw new Error(error.message || 'API request failed')
+      throw new ApiError(
+        errorData.message || 'API request failed',
+        response.status,
+        response.statusText
+      )
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return {} as T
     }
 
     return response.json()
