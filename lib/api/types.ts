@@ -316,3 +316,151 @@ export interface UpdateWarehouseData {
   description?: string | null
   location?: string | null
 }
+
+// Inventory Types
+export interface Stock {
+  id: number
+  product_id: number
+  warehouse_id: number
+  quantity: number
+  reorder_point: number
+  last_restock_date: string | null
+  created_at: string
+  updated_at: string
+  product?: Product
+  warehouse?: Warehouse
+  status?: 'ok' | 'low'
+}
+
+export interface StockResponse {
+  status: string
+  message: string
+  data: Stock[]
+}
+
+export interface LowStockResponse {
+  status: string
+  message: string
+  data: Stock[]
+}
+
+export interface UpdateReorderPointData {
+  warehouse_id: number
+  product_id: number
+  reorder_point: number
+}
+
+// Inventory Movement Types
+export type MovementType = 'in' | 'out' | 'transfer' | 'adjustment'
+
+export interface MovementItem {
+  id: number
+  inventory_movement_id: number
+  product_id: number
+  quantity: number
+  unit_price: number
+  created_at: string
+  updated_at: string
+  product?: Product
+}
+
+export interface Movement {
+  id: number
+  movement_type: MovementType
+  origin_warehouse_id: number | null
+  destination_warehouse_id: number | null
+  notes: string | null
+  user_id: number
+  created_at: string
+  updated_at: string
+  origin_warehouse?: Warehouse
+  destination_warehouse?: Warehouse
+  items?: MovementItem[]
+  user?: User
+}
+
+export interface MovementsResponse {
+  status: string
+  message: string
+  data: PaginatedData<Movement>
+}
+
+export interface MovementResponse {
+  status: string
+  message: string
+  data: Movement
+}
+
+export interface CreateMovementItemData {
+  product_id: number
+  quantity: number
+  unit_price?: number
+}
+
+export interface CreateMovementData {
+  movement_type: MovementType
+  origin_warehouse_id?: number | null
+  destination_warehouse_id?: number | null
+  notes?: string
+  items: CreateMovementItemData[]
+}
+
+// Purchase Types
+export type PurchaseStatus = 'pending' | 'completed' | 'canceled'
+
+export interface PurchaseItem {
+  id: number
+  purchase_id: number
+  product_id: number
+  quantity: number
+  unit_price: string
+  total_price: string
+  created_at: string
+  updated_at: string
+  product?: Product
+}
+
+export interface Purchase {
+  id: number
+  supplier_id: number
+  warehouse_id: number | null
+  status: PurchaseStatus
+  total_amount: string
+  purchase_date: string
+  notes: string | null
+  created_at: string
+  updated_at: string
+  supplier?: Supplier
+  items?: PurchaseItem[]
+}
+
+export interface PurchasesResponse {
+  status: string
+  message: string
+  data: PaginatedData<Purchase>
+}
+
+export interface PurchaseResponse {
+  status: string
+  message: string
+  data: Purchase
+}
+
+export interface CreatePurchaseItemData {
+  product_id: number
+  quantity: number
+  unit_price: number
+}
+
+export interface CreatePurchaseData {
+  supplier_id: number
+  warehouse_id?: number | null
+  notes?: string | null
+  items: CreatePurchaseItemData[]
+}
+
+export interface UpdatePurchaseData {
+  status?: PurchaseStatus
+  notes?: string | null
+  items?: CreatePurchaseItemData[]
+}

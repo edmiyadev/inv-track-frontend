@@ -11,13 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Trash2 } from "lucide-react"
 import { purchaseOrderFormSchema, type PurchaseOrderFormData } from "@/lib/validations"
-import type { PurchaseOrder, Supplier, Product } from "@/types"
+import type { Purchase, Supplier, Product } from "@/lib/api/types"
 
 interface PurchaseOrderFormProps {
-  order?: PurchaseOrder
+  order?: Purchase
   suppliers: Supplier[]
   products: Product[]
-  onSubmit: (data: PurchaseOrderFormData) => void
+  onSubmit: (data: PurchaseOrderFormData) => Promise<void>
   onCancel: () => void
 }
 
@@ -35,21 +35,18 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
     resolver: zodResolver(purchaseOrderFormSchema),
     defaultValues: order
       ? {
-          supplierId: order.supplierId,
-          orderDate: order.orderDate,
-          expectedDeliveryDate: order.expectedDeliveryDate,
-          items: order.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-          })),
-          notes: order.notes,
-        }
+        supplierId: order.supplier_id,
+        warehouseId: order.warehouse_id || undefined,
+        items: order.items?.map((item) => ({
+          productId: item.product_id,
+          quantity: item.quantity,
+          unitPrice: parseFloat(item.unit_price),
+        })) || [],
+        notes: order.notes || "",
+      }
       : {
-          orderDate: new Date(),
-          expectedDeliveryDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-          items: [{ productId: "", quantity: 1, unitPrice: 0 }],
-        },
+        items: [{ productId: 0, quantity: 1, unitPrice: 0 }],
+      },
   })
 
   const { fields, append, remove } = useFieldArray({
@@ -59,13 +56,15 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
 
   const items = watch("items")
   const subtotal = items.reduce((sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0), 0)
-  const tax = subtotal * 0.1
+  const tax = subtotal * 0.18
   const total = subtotal + tax
 
   const handleFormSubmit = async (data: PurchaseOrderFormData) => {
     setIsSubmitting(true)
     try {
       await onSubmit(data)
+    } catch (error) {
+      console.error(error)
     } finally {
       setIsSubmitting(false)
     }
@@ -79,46 +78,27 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
           <CardDescription>Enter purchase order details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="supplierId">
                 Supplier <span className="text-destructive">*</span>
               </Label>
-              <Select value={watch("supplierId")} onValueChange={(value) => setValue("supplierId", value)}>
+              <Select
+                value={watch("supplierId")?.toString()}
+                onValueChange={(value) => setValue("supplierId", parseInt(value))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
                   {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id}>
+                    <SelectItem key={supplier.id} value={supplier.id.toString()}>
                       {supplier.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {errors.supplierId && <p className="text-sm text-destructive">{errors.supplierId.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="orderDate">
-                Order Date <span className="text-destructive">*</span>
-              </Label>
-              <Input id="orderDate" type="date" {...register("orderDate", { valueAsDate: true })} />
-              {errors.orderDate && <p className="text-sm text-destructive">{errors.orderDate.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="expectedDeliveryDate">
-                Expected Delivery <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="expectedDeliveryDate"
-                type="date"
-                {...register("expectedDeliveryDate", { valueAsDate: true })}
-              />
-              {errors.expectedDeliveryDate && (
-                <p className="text-sm text-destructive">{errors.expectedDeliveryDate.message}</p>
-              )}
             </div>
           </div>
         </CardContent>
@@ -136,12 +116,13 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
                 <div className="space-y-2">
                   <Label>Product</Label>
                   <Select
-                    value={watch(`items.${index}.productId`)}
+                    value={watch(`items.${index}.productId`)?.toString()}
                     onValueChange={(value) => {
-                      setValue(`items.${index}.productId`, value)
-                      const product = products.find((p) => p.id === value)
+                      const productId = parseInt(value)
+                      setValue(`items.${index}.productId`, productId)
+                      const product = products.find((p) => p.id === productId)
                       if (product) {
-                        setValue(`items.${index}.unitPrice`, product.price)
+                        setValue(`items.${index}.unitPrice`, parseFloat(product.price as unknown as string))
                       }
                     }}
                   >
@@ -150,17 +131,23 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
                     </SelectTrigger>
                     <SelectContent>
                       {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
+                        <SelectItem key={product.id} value={product.id.toString()}>
                           {product.name} ({product.sku})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.items?.[index]?.productId && (
+                    <p className="text-sm text-destructive">{errors.items[index]?.productId?.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label>Quantity</Label>
                   <Input type="number" {...register(`items.${index}.quantity`, { valueAsNumber: true })} min="1" />
+                  {errors.items?.[index]?.quantity && (
+                    <p className="text-sm text-destructive">{errors.items[index]?.quantity?.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -171,6 +158,9 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
                     {...register(`items.${index}.unitPrice`, { valueAsNumber: true })}
                     min="0"
                   />
+                  {errors.items?.[index]?.unitPrice && (
+                    <p className="text-sm text-destructive">{errors.items[index]?.unitPrice?.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -187,7 +177,7 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ productId: "", quantity: 1, unitPrice: 0 })}
+            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0 })}
             className="w-full"
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -200,12 +190,12 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
               <span className="font-medium">${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tax (10%):</span>
-              <span className="font-medium">${tax.toFixed(2)}</span>
+              <span className="text-muted-foreground">Tax (18%):</span>
+              <span className="font-medium">${(subtotal * 0.18).toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg font-semibold">
               <span>Total:</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${(subtotal * 1.18).toFixed(2)}</span>
             </div>
           </div>
         </CardContent>

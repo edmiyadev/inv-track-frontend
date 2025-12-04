@@ -124,25 +124,23 @@ export type RoleFormData = z.infer<typeof roleFormSchema>
 // Supplier Form Validation Schema
 export const supplierFormSchema = z.object({
   name: z.string().min(2, "Supplier name must be at least 2 characters").max(100, "Supplier name is too long"),
-  contactPerson: z.string().min(2, "Contact person name must be at least 2 characters").max(100, "Name is too long"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 characters").max(20, "Phone number is too long"),
-  address: z.string().min(5, "Address must be at least 5 characters").max(200, "Address is too long"),
-  paymentTerms: z.string().min(1, "Please specify payment terms"),
-  status: z.enum(["active", "inactive"]).default("active"),
+  rnc: z.string().max(20, "RNC is too long").optional().or(z.literal("")),
+  email: z.string().email("Please enter a valid email address").optional().or(z.literal("")),
+  phone_number: z.string().max(20, "Phone number is too long").optional().or(z.literal("")),
+  address: z.string().max(200, "Address is too long").optional().or(z.literal("")),
+  is_active: z.boolean().default(true),
 })
 
 export type SupplierFormData = z.infer<typeof supplierFormSchema>
 
 // Purchase Order Form Validation Schema
 export const purchaseOrderFormSchema = z.object({
-  supplierId: z.string().min(1, "Please select a supplier"),
-  orderDate: z.date(),
-  expectedDeliveryDate: z.date(),
+  supplierId: z.coerce.number().min(1, "Please select a supplier"),
+  warehouseId: z.coerce.number().optional(),
   items: z
     .array(
       z.object({
-        productId: z.string().min(1, "Please select a product"),
+        productId: z.coerce.number().min(1, "Please select a product"),
         quantity: z.coerce.number().int().min(1, "Quantity must be at least 1"),
         unitPrice: z.coerce.number().min(0.01, "Unit price must be greater than 0"),
       }),

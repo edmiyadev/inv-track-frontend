@@ -3,7 +3,8 @@
 import { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import { usePermission } from '@/components/auth/can-access'
-import type { Actions, Subjects } from '@/lib/casl'
+import { isAdmin, type Actions, type Subjects } from '@/lib/casl'
+import { useAuthStore } from '@/lib/store/auth'
 
 interface ProtectedRouteProps {
   action: Actions
@@ -26,21 +27,26 @@ interface ProtectedRouteProps {
  *   )
  * }
  */
-export function ProtectedRoute({ 
-  action, 
-  subject, 
-  children, 
+export function ProtectedRoute({
+  action,
+  subject,
+  children,
   redirectTo = '/dashboard',
-  fallback 
+  fallback
 }: ProtectedRouteProps) {
   const hasPermission = usePermission(action, subject)
-  
+  const user = useAuthStore((state) => state.user)
+
+  if (isAdmin(user)) {
+    return <>{children}</>
+  }
+
   if (!hasPermission) {
     if (fallback) {
       return <>{fallback}</>
     }
     redirect(redirectTo)
   }
-  
+
   return <>{children}</>
 }

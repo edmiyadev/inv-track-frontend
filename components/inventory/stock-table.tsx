@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -14,70 +14,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { StockAdjustmentForm } from "./stock-adjustment-form"
-
-interface StockItem {
-  id: string
-  productName: string
-  sku: string
-  currentStock: number
-  reorderPoint: number
-  lastUpdated: Date
-  status: "in-stock" | "low-stock" | "out-of-stock"
-}
-
-const mockStockData: StockItem[] = [
-  {
-    id: "1",
-    productName: "Wireless Mouse",
-    sku: "MSE-001",
-    currentStock: 145,
-    reorderPoint: 20,
-    lastUpdated: new Date(),
-    status: "in-stock",
-  },
-  {
-    id: "2",
-    productName: "USB-C Cable",
-    sku: "CBL-002",
-    currentStock: 8,
-    reorderPoint: 50,
-    lastUpdated: new Date(),
-    status: "low-stock",
-  },
-  {
-    id: "3",
-    productName: "Mechanical Keyboard",
-    sku: "KBD-003",
-    currentStock: 0,
-    reorderPoint: 10,
-    lastUpdated: new Date(),
-    status: "out-of-stock",
-  },
-  {
-    id: "4",
-    productName: "Office Chair",
-    sku: "FUR-004",
-    currentStock: 32,
-    reorderPoint: 5,
-    lastUpdated: new Date(),
-    status: "in-stock",
-  },
-  {
-    id: "5",
-    productName: "Desk Lamp",
-    sku: "LGT-005",
-    currentStock: 67,
-    reorderPoint: 15,
-    lastUpdated: new Date(),
-    status: "in-stock",
-  },
-]
+import { useQuery } from "@tanstack/react-query"
+import { inventoryApi } from "@/lib/api/inventory"
+import { useAuthStore } from "@/lib/store/auth"
+import { Stock } from "@/lib/api/types"
 
 export function StockTable() {
-  const [stockData] = useState<StockItem[]>(mockStockData)
-  const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(null)
+  const { accessToken } = useAuthStore()
+  const [selectedStock, setSelectedStock] = useState<Stock | null>(null)
+  const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
 
-  const getStatusBadge = (status: StockItem["status"]) => {
+  const { data: stockResponse, isLoading, error } = useQuery({
+    queryKey: ["stocks"],
+    queryFn: () => inventoryApi.getAllStocks(accessToken!),
+    enabled: !!accessToken,
+  })
+
+  const stocks = stockResponse?.data || []
+
+  const getStatus = (stock: Stock) => {
+    if (stock.quantity === 0) return "out-of-stock"
+    if (stock.quantity <= stock.reorder_point) return "low-stock"
+    return "in-stock"
+  }
+
+  const getStatusBadge = (stock: Stock) => {
+    const status = getStatus(stock)
     const variants = {
       "in-stock": "default",
       "low-stock": "secondary",
@@ -97,6 +59,22 @@ export function StockTable() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex h-48 items-center justify-center rounded-lg border border-border bg-card">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-48 items-center justify-center rounded-lg border border-border bg-card text-destructive">
+        Error loading stocks
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-lg border border-border bg-card">
       <Table>
@@ -109,6 +87,7 @@ export function StockTable() {
               </Button>
             </TableHead>
             <TableHead>SKU</TableHead>
+            <TableHead>Warehouse</TableHead>
             <TableHead className="text-right">
               <Button variant="ghost" size="sm" className="h-8 px-2">
                 Current Stock
@@ -122,34 +101,55 @@ export function StockTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {stockData.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium">{item.productName}</TableCell>
-              <TableCell className="font-mono text-sm text-muted-foreground">{item.sku}</TableCell>
-              <TableCell className="text-right font-semibold">{item.currentStock}</TableCell>
-              <TableCell className="text-right text-muted-foreground">{item.reorderPoint}</TableCell>
-              <TableCell>{getStatusBadge(item.status)}</TableCell>
-              <TableCell className="text-sm text-muted-foreground">{item.lastUpdated.toLocaleDateString()}</TableCell>
+          {stocks.map((stock) => (
+            <TableRow key={stock.id}>
+              <TableCell className="font-medium">{stock.product?.name || "Unknown Product"}</TableCell>
+              <TableCell className="font-mono text-sm text-muted-foreground">{stock.product?.sku || "-"}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">{stock.warehouse?.name || "-"}</TableCell>
+              <TableCell className="text-right font-semibold">{stock.quantity}</TableCell>
+              <TableCell className="text-right text-muted-foreground">{stock.reorder_point}</TableCell>
+              <TableCell>{getStatusBadge(stock)}</TableCell>
+              <TableCell className="text-sm text-muted-foreground">
+                {new Date(stock.updated_at).toLocaleDateString()}
+              </TableCell>
               <TableCell>
-                <Dialog>
+                <Dialog open={isAdjustmentOpen && selectedStock?.id === stock.id} onOpenChange={(open) => {
+                  if (open) setSelectedStock(stock)
+                  setIsAdjustmentOpen(open)
+                }}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={() => setSelectedProduct(item)}>
+                    <Button variant="outline" size="sm">
                       Adjust
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Adjust Stock</DialogTitle>
-                      <DialogDescription>Update stock levels for {selectedProduct?.productName}</DialogDescription>
+                      <DialogDescription>
+                        Update stock levels for {stock.product?.name} in {stock.warehouse?.name}
+                      </DialogDescription>
                     </DialogHeader>
-                    {selectedProduct && <StockAdjustmentForm product={selectedProduct} />}
+                    {selectedStock && (
+                      <StockAdjustmentForm 
+                        stock={selectedStock} 
+                        onSuccess={() => setIsAdjustmentOpen(false)} 
+                      />
+                    )}
                   </DialogContent>
                 </Dialog>
               </TableCell>
             </TableRow>
           ))}
+          {stocks.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={8} className="h-24 text-center">
+                No stocks found.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
   )
 }
+

@@ -1,5 +1,6 @@
 "use client"
 
+import { use, useState } from "react"
 import { useRouter } from "next/navigation"
 import { PageHeader } from "@/components/layout/page-header"
 import { PurchaseOrderForm } from "@/components/purchasing/purchase-order-form"
@@ -9,13 +10,22 @@ import { productsApi } from "@/lib/api/products"
 import { useAuthStore } from "@/lib/store/auth"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
-export default function NewPurchaseOrderPage() {
+export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
   const router = useRouter()
   const { accessToken } = useAuthStore()
   const queryClient = useQueryClient()
   const [error, setError] = useState<string | null>(null)
+
+  const { data: orderResponse, isLoading: isLoadingOrder, isError, error: fetchError } = useQuery({
+    queryKey: ["purchase", resolvedParams.id],
+    queryFn: () => purchasingApi.getPurchaseById(parseInt(resolvedParams.id), accessToken!),
+    enabled: !!accessToken,
+  })
 
   const { data: suppliersResponse, isLoading: isLoadingSuppliers } = useQuery({
     queryKey: ["suppliers", "all"],
@@ -30,9 +40,7 @@ export default function NewPurchaseOrderPage() {
   })
 
   const mutation = useMutation({
-    mutationFn: (data: PurchaseOrderFormData) => purchasingApi.createPurchase({
-      supplier_id: data.supplierId,
-      warehouse_id: data.warehouseId || null,
+    mutationFn: (data: PurchaseOrderFormData) => purchasingApi.updatePurchase(parseInt(resolvedParams.id), {
       notes: data.notes || null,
       items: data.items.map(item => ({
         product_id: item.productId,
@@ -42,10 +50,11 @@ export default function NewPurchaseOrderPage() {
     }, accessToken!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["purchases"] })
+      queryClient.invalidateQueries({ queryKey: ["purchase", resolvedParams.id] })
       router.push("/purchasing")
     },
     onError: (err: any) => {
-      setError(err.message || "Failed to create purchase order")
+      setError(err.message || "Failed to update purchase order")
     },
   })
 
@@ -58,7 +67,7 @@ export default function NewPurchaseOrderPage() {
     router.push("/purchasing")
   }
 
-  if (isLoadingSuppliers || isLoadingProducts) {
+  if (isLoadingOrder || isLoadingSuppliers || isLoadingProducts) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
@@ -69,20 +78,42 @@ export default function NewPurchaseOrderPage() {
     )
   }
 
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Edit Purchase Order" description="Update purchase order details" />
+        <Alert variant="destructive">
+          <AlertDescription>{(fetchError as Error).message || "Error loading order"}</AlertDescription>
+        </Alert>
+        <Button asChild variant="outline">
+          <Link href="/purchasing">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Purchasing
+          </Link>
+        </Button>
+      </div>
+    )
+  }
+
+  const order = orderResponse?.data
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Create Purchase Order" description="Create a new purchase order" />
+      <PageHeader title={`Edit PO-${order?.id}`} description="Update purchase order details" />
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <PurchaseOrderForm
-        suppliers={suppliersResponse?.data.data || []}
-        products={productsResponse?.data.data || []}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-      />
+      {order && (
+        <PurchaseOrderForm
+          order={order}
+          suppliers={suppliersResponse?.data.data || []}
+          products={productsResponse?.data.data || []}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />
+      )}
     </div>
   )
 }

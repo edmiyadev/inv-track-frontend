@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MoreHorizontal, Eye, Pencil, Trash2, FileText } from "lucide-react"
+import { MoreHorizontal, Eye, Pencil, Trash2, FileText, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,82 +15,48 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import type { PurchaseOrder } from "@/types"
-
-const mockPurchaseOrders: PurchaseOrder[] = [
-  {
-    id: "1",
-    poNumber: "PO-2024-001",
-    supplierId: "1",
-    supplierName: "Global Tech Supplies",
-    orderDate: new Date("2024-03-15"),
-    expectedDeliveryDate: new Date("2024-03-25"),
-    status: "approved",
-    items: [],
-    subtotal: 15000,
-    tax: 1500,
-    total: 16500,
-    createdBy: "Admin User",
-    createdAt: new Date("2024-03-15"),
-    updatedAt: new Date("2024-03-15"),
-  },
-  {
-    id: "2",
-    poNumber: "PO-2024-002",
-    supplierId: "2",
-    supplierName: "Premium Electronics Co.",
-    orderDate: new Date("2024-03-18"),
-    expectedDeliveryDate: new Date("2024-03-30"),
-    status: "pending",
-    items: [],
-    subtotal: 8500,
-    tax: 850,
-    total: 9350,
-    createdBy: "Admin User",
-    createdAt: new Date("2024-03-18"),
-    updatedAt: new Date("2024-03-18"),
-  },
-  {
-    id: "3",
-    poNumber: "PO-2024-003",
-    supplierId: "1",
-    supplierName: "Global Tech Supplies",
-    orderDate: new Date("2024-03-20"),
-    expectedDeliveryDate: new Date("2024-04-05"),
-    status: "received",
-    items: [],
-    subtotal: 22000,
-    tax: 2200,
-    total: 24200,
-    createdBy: "Manager User",
-    createdAt: new Date("2024-03-20"),
-    updatedAt: new Date("2024-03-28"),
-  },
-]
+import { useQuery } from "@tanstack/react-query"
+import { purchasingApi } from "@/lib/api/purchasing"
+import { useAuthStore } from "@/lib/store/auth"
+import { Purchase } from "@/lib/api/types"
 
 const statusColors = {
-  draft: "secondary",
-  pending: "default",
-  approved: "default",
-  received: "default",
-  cancelled: "secondary",
+  pending: "secondary",
+  completed: "default",
+  canceled: "destructive",
 } as const
 
 export function PurchaseOrderTable() {
+  const { accessToken } = useAuthStore()
   const [searchQuery, setSearchQuery] = useState("")
-  const [orders] = useState<PurchaseOrder[]>(mockPurchaseOrders)
+
+  const { data: ordersResponse, isLoading } = useQuery({
+    queryKey: ["purchases"],
+    queryFn: () => purchasingApi.getAllPurchases(accessToken!, 1, 50),
+    enabled: !!accessToken,
+  })
+
+  const orders = ordersResponse?.data.data || []
 
   const filteredOrders = orders.filter(
     (order) =>
-      order.poNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.supplierName.toLowerCase().includes(searchQuery.toLowerCase()),
+      order.supplier?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.id.toString().includes(searchQuery)
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex h-48 items-center justify-center rounded-lg border border-border bg-card">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Input
-          placeholder="Search purchase orders..."
+          placeholder="Search purchases..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
@@ -103,58 +69,61 @@ export function PurchaseOrderTable() {
             <TableRow>
               <TableHead>PO Number</TableHead>
               <TableHead>Supplier</TableHead>
-              <TableHead>Order Date</TableHead>
-              <TableHead>Expected Delivery</TableHead>
-              <TableHead>Total</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="text-right">Total</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No purchase orders found.
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  No purchases found.
                 </TableCell>
               </TableRow>
             ) : (
               filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.poNumber}</TableCell>
-                  <TableCell>{order.supplierName}</TableCell>
-                  <TableCell>{order.orderDate.toLocaleDateString()}</TableCell>
-                  <TableCell>{order.expectedDeliveryDate.toLocaleDateString()}</TableCell>
-                  <TableCell className="font-medium">${order.total.toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">PO-{order.id.toString().padStart(6, '0')}</TableCell>
+                  <TableCell>{order.supplier?.name || "Unknown Supplier"}</TableCell>
+                  <TableCell>{new Date(order.purchase_date || order.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <Badge variant={statusColors[order.status]}>{order.status}</Badge>
+                    <Badge variant={statusColors[order.status] || "default"}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    ${parseFloat(order.total_amount).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                           <Link href={`/purchasing/orders/${order.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
+                        {order.status === 'pending' && (
+                          <DropdownMenuItem asChild>
+                            <Link href={`/purchasing/orders/${order.id}/edit`}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Edit
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem>
                           <FileText className="mr-2 h-4 w-4" />
-                          Generate Invoice
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Cancel Order
+                          Download PDF
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

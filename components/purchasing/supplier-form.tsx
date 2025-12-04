@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { supplierFormSchema, type SupplierFormData } from "@/lib/validations"
-import type { Supplier } from "@/types"
+import type { Supplier } from "@/lib/api/types"
+import { Loader2 } from "lucide-react"
 
 interface SupplierFormProps {
   supplier?: Supplier
-  onSubmit: (data: SupplierFormData) => void
+  onSubmit: (data: SupplierFormData) => Promise<void>
   onCancel: () => void
 }
 
@@ -32,15 +33,14 @@ export function SupplierForm({ supplier, onSubmit, onCancel }: SupplierFormProps
     defaultValues: supplier
       ? {
           name: supplier.name,
-          contactPerson: supplier.contactPerson,
-          email: supplier.email,
-          phone: supplier.phone,
-          address: supplier.address,
-          paymentTerms: supplier.paymentTerms,
-          status: supplier.status,
+          rnc: supplier.rnc || "",
+          email: supplier.email || "",
+          phone_number: supplier.phone_number || "",
+          address: supplier.address || "",
+          is_active: supplier.is_active,
         }
       : {
-          status: "active",
+          is_active: true,
         },
   })
 
@@ -71,73 +71,37 @@ export function SupplierForm({ supplier, onSubmit, onCancel }: SupplierFormProps
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contactPerson">
-                Contact Person <span className="text-destructive">*</span>
-              </Label>
-              <Input id="contactPerson" {...register("contactPerson")} placeholder="Enter contact person name" />
-              {errors.contactPerson && <p className="text-sm text-destructive">{errors.contactPerson.message}</p>}
+              <Label htmlFor="rnc">RNC</Label>
+              <Input id="rnc" {...register("rnc")} placeholder="Enter RNC" />
+              {errors.rnc && <p className="text-sm text-destructive">{errors.rnc.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">
-                Email <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" {...register("email")} placeholder="supplier@example.com" />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">
-                Phone <span className="text-destructive">*</span>
-              </Label>
-              <Input id="phone" {...register("phone")} placeholder="+1 (555) 123-4567" />
-              {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
+              <Label htmlFor="phone_number">Phone</Label>
+              <Input id="phone_number" {...register("phone_number")} placeholder="+1 (555) 123-4567" />
+              {errors.phone_number && <p className="text-sm text-destructive">{errors.phone_number.message}</p>}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">
-              Address <span className="text-destructive">*</span>
-            </Label>
+            <Label htmlFor="address">Address</Label>
             <Textarea id="address" {...register("address")} placeholder="Enter full address" rows={3} />
             {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="paymentTerms">
-                Payment Terms <span className="text-destructive">*</span>
-              </Label>
-              <Select value={watch("paymentTerms")} onValueChange={(value) => setValue("paymentTerms", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select payment terms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Net 15">Net 15</SelectItem>
-                  <SelectItem value="Net 30">Net 30</SelectItem>
-                  <SelectItem value="Net 45">Net 45</SelectItem>
-                  <SelectItem value="Net 60">Net 60</SelectItem>
-                  <SelectItem value="Due on Receipt">Due on Receipt</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.paymentTerms && <p className="text-sm text-destructive">{errors.paymentTerms.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={watch("status")}
-                onValueChange={(value: "active" | "inactive") => setValue("status", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="is_active"
+              checked={watch("is_active")}
+              onCheckedChange={(checked) => setValue("is_active", checked)}
+            />
+            <Label htmlFor="is_active">Active Supplier</Label>
           </div>
         </CardContent>
       </Card>
@@ -147,7 +111,8 @@ export function SupplierForm({ supplier, onSubmit, onCancel }: SupplierFormProps
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : supplier ? "Update Supplier" : "Create Supplier"}
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {supplier ? "Update Supplier" : "Create Supplier"}
         </Button>
       </div>
     </form>

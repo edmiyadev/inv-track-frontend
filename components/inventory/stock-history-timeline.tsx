@@ -1,68 +1,59 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowDownIcon, ArrowUpIcon, RefreshCw } from "lucide-react"
-import type { InventoryMovement } from "@/types"
-
-const mockHistory: InventoryMovement[] = [
-  {
-    id: "1",
-    productId: "1",
-    productName: "Wireless Mouse",
-    type: "in",
-    quantity: 50,
-    reason: "New shipment received",
-    performedBy: "John Doe",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: "2",
-    productId: "2",
-    productName: "USB-C Cable",
-    type: "out",
-    quantity: 25,
-    reason: "Customer order fulfillment",
-    performedBy: "Jane Smith",
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-  },
-  {
-    id: "3",
-    productId: "3",
-    productName: "Mechanical Keyboard",
-    type: "adjustment",
-    quantity: 5,
-    reason: "Inventory count correction",
-    performedBy: "Admin",
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
-  },
-  {
-    id: "4",
-    productId: "1",
-    productName: "Wireless Mouse",
-    type: "out",
-    quantity: 15,
-    reason: "Bulk order shipment",
-    performedBy: "John Doe",
-    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-  },
-  {
-    id: "5",
-    productId: "4",
-    productName: "Office Chair",
-    type: "in",
-    quantity: 10,
-    reason: "Restocking",
-    performedBy: "Jane Smith",
-    timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000),
-  },
-]
+import { ArrowDownIcon, ArrowUpIcon, RefreshCw, Loader2 } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { inventoryApi } from "@/lib/api/inventory"
+import { useAuthStore } from "@/lib/store/auth"
 
 export function StockHistoryTimeline() {
-  const getTimeAgo = (date: Date) => {
+  const { accessToken } = useAuthStore()
+
+  const { data: movementsResponse, isLoading } = useQuery({
+    queryKey: ["movements"],
+    queryFn: () => inventoryApi.getAllMovements(accessToken!, 1, 10), // Fetch latest 10
+    enabled: !!accessToken,
+  })
+
+  const movements = movementsResponse?.data.data || []
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
     const hours = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60))
+    if (hours < 1) return "Just now"
     if (hours < 24) return `${hours} hours ago`
     const days = Math.floor(hours / 24)
     return `${days} day${days > 1 ? "s" : ""} ago`
   }
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Stock Movement History</CardTitle>
+          <CardDescription>Recent inventory transactions and adjustments</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Flatten movements to items for display
+  const historyItems = movements.flatMap(movement => 
+    (movement.items || []).map(item => ({
+      id: `${movement.id}-${item.id}`,
+      productName: item.product?.name || "Unknown Product",
+      type: movement.movement_type,
+      quantity: item.quantity,
+      reason: movement.notes || "No notes",
+      performedBy: movement.user?.name || "Unknown User",
+      timestamp: movement.created_at,
+    }))
+  ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+   .slice(0, 10) // Limit to 10 items
 
   return (
     <Card>
@@ -74,20 +65,20 @@ export function StockHistoryTimeline() {
         <div className="relative space-y-4">
           <div className="absolute left-[17px] top-2 h-[calc(100%-2rem)] w-px bg-border" />
 
-          {mockHistory.map((movement, index) => (
-            <div key={movement.id} className="relative flex gap-4">
+          {historyItems.map((item) => (
+            <div key={item.id} className="relative flex gap-4">
               <div
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-background z-10 ${
-                  movement.type === "in"
+                  item.type === "in"
                     ? "bg-success text-success-foreground"
-                    : movement.type === "out"
+                    : item.type === "out"
                       ? "bg-destructive text-destructive-foreground"
                       : "bg-warning text-warning-foreground"
                 }`}
               >
-                {movement.type === "in" ? (
+                {item.type === "in" ? (
                   <ArrowDownIcon className="h-4 w-4" />
-                ) : movement.type === "out" ? (
+                ) : item.type === "out" ? (
                   <ArrowUpIcon className="h-4 w-4" />
                 ) : (
                   <RefreshCw className="h-4 w-4" />
@@ -97,22 +88,31 @@ export function StockHistoryTimeline() {
               <div className="flex-1 space-y-1 pb-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-medium leading-none">{movement.productName}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{movement.reason}</p>
+                    <p className="font-medium leading-none">{item.productName}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {item.type === "in" ? "Received" : item.type === "out" ? "Shipped" : "Adjusted"}{" "}
+                      <span className="font-medium text-foreground">{Math.abs(item.quantity)}</span> units
+                    </p>
                   </div>
-                  <Badge variant="outline" className="shrink-0">
-                    {movement.type === "in" ? "+" : movement.type === "out" ? "-" : "±"}
-                    {movement.quantity}
-                  </Badge>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {getTimeAgo(item.timestamp)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>{movement.performedBy}</span>
-                  <span>•</span>
-                  <span>{getTimeAgo(movement.timestamp)}</span>
+                  <Badge variant="outline" className="text-[10px] h-5">
+                    {item.reason}
+                  </Badge>
+                  <span>by {item.performedBy}</span>
                 </div>
               </div>
             </div>
           ))}
+          
+          {historyItems.length === 0 && (
+            <div className="text-center text-muted-foreground py-4">
+              No movements found.
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
