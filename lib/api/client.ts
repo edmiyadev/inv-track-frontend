@@ -33,6 +33,7 @@ class ApiClient {
       ...restOptions,
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
         ...headers,
       },

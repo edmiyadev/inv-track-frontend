@@ -6,6 +6,7 @@ import { PurchaseOrderForm } from "@/components/purchasing/purchase-order-form"
 import type { PurchaseOrderFormData } from "@/lib/validations"
 import { purchasingApi } from "@/lib/api/purchasing"
 import { productsApi } from "@/lib/api/products"
+import { warehousesApi } from "@/lib/api/warehouses"
 import { useAuthStore } from "@/lib/store/auth"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -19,13 +20,19 @@ export default function NewPurchaseOrderPage() {
 
   const { data: suppliersResponse, isLoading: isLoadingSuppliers } = useQuery({
     queryKey: ["suppliers", "all"],
-    queryFn: () => purchasingApi.getAllSuppliers(accessToken!, 1, 100),
+    queryFn: () => purchasingApi.getAllSuppliers(accessToken!, 1, 1000),
     enabled: !!accessToken,
   })
 
   const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
     queryKey: ["products", "all"],
-    queryFn: () => productsApi.getAll(accessToken!, 1, 100),
+    queryFn: () => productsApi.getAll(accessToken!, 1, 1000),
+    enabled: !!accessToken,
+  })
+
+  const { data: warehousesResponse, isLoading: isLoadingWarehouses } = useQuery({
+    queryKey: ["warehouses", "all"],
+    queryFn: () => warehousesApi.getAll(accessToken!, 1, 1000),
     enabled: !!accessToken,
   })
 
@@ -58,7 +65,7 @@ export default function NewPurchaseOrderPage() {
     router.push("/purchasing")
   }
 
-  if (isLoadingSuppliers || isLoadingProducts) {
+  if (isLoadingSuppliers || isLoadingProducts || isLoadingWarehouses) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
@@ -80,6 +87,7 @@ export default function NewPurchaseOrderPage() {
       <PurchaseOrderForm
         suppliers={suppliersResponse?.data.data || []}
         products={productsResponse?.data.data || []}
+        warehouses={warehousesResponse?.data.data || []}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />

@@ -16,7 +16,9 @@ export function StockHistoryTimeline() {
     enabled: !!accessToken,
   })
 
-  const movements = movementsResponse?.data.data || []
+  // Handle both paginated (data.data) and simple array (data) responses
+  const responseData = movementsResponse as any
+  const movements = responseData?.data?.data || responseData?.data || []
 
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
@@ -42,7 +44,7 @@ export function StockHistoryTimeline() {
   }
 
   // Flatten movements to items for display
-  const historyItems = movements.flatMap(movement => 
+  const historyItems = movements.flatMap(movement =>
     (movement.items || []).map(item => ({
       id: `${movement.id}-${item.id}`,
       productName: item.product?.name || "Unknown Product",
@@ -53,7 +55,7 @@ export function StockHistoryTimeline() {
       timestamp: movement.created_at,
     }))
   ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-   .slice(0, 10) // Limit to 10 items
+    .slice(0, 10) // Limit to 10 items
 
   return (
     <Card>
@@ -68,13 +70,12 @@ export function StockHistoryTimeline() {
           {historyItems.map((item) => (
             <div key={item.id} className="relative flex gap-4">
               <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-background z-10 ${
-                  item.type === "in"
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-background z-10 ${item.type === "in"
                     ? "bg-success text-success-foreground"
                     : item.type === "out"
                       ? "bg-destructive text-destructive-foreground"
                       : "bg-warning text-warning-foreground"
-                }`}
+                  }`}
               >
                 {item.type === "in" ? (
                   <ArrowDownIcon className="h-4 w-4" />
@@ -107,7 +108,7 @@ export function StockHistoryTimeline() {
               </div>
             </div>
           ))}
-          
+
           {historyItems.length === 0 && (
             <div className="text-center text-muted-foreground py-4">
               No movements found.

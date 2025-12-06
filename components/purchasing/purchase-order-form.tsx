@@ -11,17 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Trash2 } from "lucide-react"
 import { purchaseOrderFormSchema, type PurchaseOrderFormData } from "@/lib/validations"
-import type { Purchase, Supplier, Product } from "@/lib/api/types"
+import type { Purchase, Supplier, Product, Warehouse } from "@/lib/api/types"
 
 interface PurchaseOrderFormProps {
   order?: Purchase
   suppliers: Supplier[]
   products: Product[]
+  warehouses: Warehouse[]
   onSubmit: (data: PurchaseOrderFormData) => Promise<void>
   onCancel: () => void
 }
 
-export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCancel }: PurchaseOrderFormProps) {
+export function PurchaseOrderForm({ order, suppliers, products, warehouses, onSubmit, onCancel }: PurchaseOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -87,7 +88,7 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
                 value={watch("supplierId")?.toString()}
                 onValueChange={(value) => setValue("supplierId", parseInt(value))}
               >
-                <SelectTrigger>
+                <SelectTrigger disabled={!!order}>
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
@@ -99,6 +100,28 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
                 </SelectContent>
               </Select>
               {errors.supplierId && <p className="text-sm text-destructive">{errors.supplierId.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="warehouseId">
+                Warehouse <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={watch("warehouseId")?.toString()}
+                onValueChange={(value) => setValue("warehouseId", parseInt(value))}
+              >
+                <SelectTrigger disabled={!!order}>
+                  <SelectValue placeholder="Select warehouse" />
+                </SelectTrigger>
+                <SelectContent>
+                  {warehouses.map((warehouse) => (
+                    <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                      {warehouse.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.warehouseId && <p className="text-sm text-destructive">{errors.warehouseId.message}</p>}
             </div>
           </div>
         </CardContent>
@@ -122,7 +145,7 @@ export function PurchaseOrderForm({ order, suppliers, products, onSubmit, onCanc
                       setValue(`items.${index}.productId`, productId)
                       const product = products.find((p) => p.id === productId)
                       if (product) {
-                        setValue(`items.${index}.unitPrice`, parseFloat(product.price as unknown as string))
+                        setValue(`items.${index}.unitPrice`, parseFloat(product.price))
                       }
                     }}
                   >

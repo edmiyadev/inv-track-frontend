@@ -62,8 +62,8 @@ const navigationGroups = [
       { name: "Categorías", href: "/categories", icon: FolderTree, permission: "Category" as const },
       { name: "Almacenes", href: "/warehouses", icon: Building2, permission: "Warehouse" as const },
       { name: "Proveedores", href: "/suppliers", icon: Truck, permission: "Supplier" as const },
-      { name: "Stock", href: "/inventory", icon: Warehouse, permission: "Inventory" as const },
-      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "Inventory" as const },
+      { name: "Stock", href: "/inventory", icon: Warehouse, permission: "InventoryStock" as const },
+      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "InventoryMovement" as const },
     ],
   },
   {
@@ -73,7 +73,7 @@ const navigationGroups = [
     items: [
       { name: "Usuarios", href: "/users", icon: Users, permission: "User" as const },
       { name: "Roles y Permisos", href: "/roles", icon: Shield, permission: "Role" as const },
-      { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
+      // { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
     ],
   },
 ]
@@ -97,6 +97,15 @@ export function Sidebar() {
         : [...prev, groupName]
     )
   }
+
+  // Determine the active item using "Best Match" (Longest Prefix Match) logic
+  // This prevents "/inventory" (Stock) from being active when visiting "/inventory/history" (Movements)
+  const allItems = filteredGroups.flatMap((group) => group.items)
+  const activeItem = allItems
+    .filter((item) => pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href)))
+    .sort((a, b) => b.href.length - a.href.length)[0]
+
+  const activeHref = activeItem?.href
 
   return (
     <aside
@@ -142,6 +151,9 @@ export function Sidebar() {
         </Link>
 
         {filteredGroups.map((group) => {
+          // Check if this group contains the active item
+          const hasActiveItem = group.items.some(item => item.href === activeHref)
+
           // Verificar si el grupo debe ser siempre colapsable
           const shouldBeCollapsible = (group as any).isCollapsible === true
 
@@ -149,7 +161,7 @@ export function Sidebar() {
           if (!shouldBeCollapsible && group.items.length === 1) {
             // Solo para items individuales que NO son parte de un grupo colapsable
             const item = group.items[0]
-            const isActive = pathname === item.href
+            const isActive = activeHref === item.href
             return (
               <Link
                 key={item.name}
@@ -170,9 +182,6 @@ export function Sidebar() {
           }
 
           // Grupos colapsables
-          const hasActiveItem = group.items.some(item =>
-            pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
-          )
           const isOpen = openGroups.includes(group.name)
 
           if (collapsed) {
@@ -180,7 +189,7 @@ export function Sidebar() {
             return (
               <div key={group.name} className="space-y-1">
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+                  const isActive = activeHref === item.href
                   return (
                     <Link
                       key={item.name}
@@ -231,7 +240,7 @@ export function Sidebar() {
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-1 pt-1">
                 {group.items.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href))
+                  const isActive = activeHref === item.href
                   return (
                     <Link
                       key={item.name}

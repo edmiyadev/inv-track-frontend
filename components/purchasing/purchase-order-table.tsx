@@ -36,7 +36,10 @@ export function PurchaseOrderTable() {
     enabled: !!accessToken,
   })
 
-  const orders = ordersResponse?.data.data || []
+  // Handle both paginated (data.data) and simple array (data) responses
+  // Cast to any to avoid strict type checks blocking the fallback
+  const responseData = ordersResponse as any
+  const orders = responseData?.data?.data || responseData?.data || []
 
   const filteredOrders = orders.filter(
     (order) =>

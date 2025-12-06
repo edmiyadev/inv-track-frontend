@@ -21,6 +21,8 @@ export type Subjects =
   | "Role"
   | "Settings"
   | "Warehouse"
+  | "InventoryStock"
+  | "InventoryMovement"
   | "all";
 
 // Define el tipo de Ability
@@ -55,6 +57,8 @@ function parsePermission(
     sales: "Sale",
     inventory: "Inventory",
     warehouses: "Warehouse",
+    inventory_stocks: "InventoryStock",
+    inventory_movements: "InventoryMovement",
   };
 
   // Mapear acción de Laravel a acción CASL

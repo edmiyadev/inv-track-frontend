@@ -431,6 +431,7 @@ export interface Purchase {
   created_at: string
   updated_at: string
   supplier?: Supplier
+  warehouse?: Warehouse
   items?: PurchaseItem[]
 }
 

@@ -7,6 +7,7 @@ import { PurchaseOrderForm } from "@/components/purchasing/purchase-order-form"
 import type { PurchaseOrderFormData } from "@/lib/validations"
 import { purchasingApi } from "@/lib/api/purchasing"
 import { productsApi } from "@/lib/api/products"
+import { warehousesApi } from "@/lib/api/warehouses"
 import { useAuthStore } from "@/lib/store/auth"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -27,15 +28,11 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
     enabled: !!accessToken,
   })
 
-  const { data: suppliersResponse, isLoading: isLoadingSuppliers } = useQuery({
-    queryKey: ["suppliers", "all"],
-    queryFn: () => purchasingApi.getAllSuppliers(accessToken!, 1, 100),
-    enabled: !!accessToken,
-  })
-
+  // Optimization: Removed separate calls for suppliers and warehouses
+  // We use the nested data from the purchase response
   const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
     queryKey: ["products", "all"],
-    queryFn: () => productsApi.getAll(accessToken!, 1, 100),
+    queryFn: () => productsApi.getAll(accessToken!, 1, 1000),
     enabled: !!accessToken,
   })
 
@@ -67,7 +64,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
     router.push("/purchasing")
   }
 
-  if (isLoadingOrder || isLoadingSuppliers || isLoadingProducts) {
+  if (isLoadingOrder || isLoadingProducts) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
@@ -108,8 +105,10 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
       {order && (
         <PurchaseOrderForm
           order={order}
-          suppliers={suppliersResponse?.data.data || []}
+          // Use the nested supplier/warehouse from the order, or empty array if not present
+          suppliers={order?.supplier ? [order.supplier] : []}
           products={productsResponse?.data.data || []}
+          warehouses={order?.warehouse ? [order.warehouse] : []}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />
