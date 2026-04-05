@@ -23,6 +23,7 @@ import {
   Shield,
   UserCog,
   Truck,
+  Percent,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -73,6 +74,7 @@ const navigationGroups = [
     items: [
       { name: "Usuarios", href: "/users", icon: Users, permission: "User" as const },
       { name: "Roles y Permisos", href: "/roles", icon: Shield, permission: "Role" as const },
+      { name: "Impuestos", href: "/taxes", icon: Percent, permission: "Tax" as const },
       // { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
     ],
   },
