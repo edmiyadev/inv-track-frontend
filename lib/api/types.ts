@@ -465,3 +465,40 @@ export interface UpdatePurchaseData {
   notes?: string | null
   items?: CreatePurchaseItemData[]
 }
+
+// Tax Types
+export interface Tax {
+  id: number
+  name: string
+  percentage: number
+  description: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface TaxesResponse {
+  status: string
+  message: string
+  data: PaginatedData<Tax>
+}
+
+export interface TaxResponse {
+  status: string
+  message: string
+  data: Tax
+}
+
+export interface CreateTaxData {
+  name: string
+  percentage: number
+  description?: string | null
+  is_active?: boolean
+}
+
+export interface UpdateTaxData {
+  name?: string
+  percentage?: number
+  description?: string | null
+  is_active?: boolean
+}
