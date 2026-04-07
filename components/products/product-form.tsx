@@ -222,49 +222,6 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Precio e Inventario</CardTitle>
-          <CardDescription>Configura el precio y detalles de gestión de stock</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="price">
-                Precio <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input
-                  id="price"
-                  type="text"
-                  placeholder="0.00"
-                  className="pl-7"
-                  {...register("price")}
-                />
-              </div>
-              {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="stock_quantity">
-                Stock Actual <span className="text-destructive">*</span>
-              </Label>
-              <Input id="stock_quantity" type="number" placeholder="0" {...register("stock_quantity")} />
-              {errors.stock_quantity && <p className="text-sm text-destructive">{errors.stock_quantity.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="reorder_point">
-                Punto de Reorden <span className="text-destructive">*</span>
-              </Label>
-              <Input id="reorder_point" type="number" placeholder="0" {...register("reorder_point")} />
-              {errors.reorder_point && <p className="text-sm text-destructive">{errors.reorder_point.message}</p>}
-              <p className="text-xs text-muted-foreground">Alerta cuando el stock caiga por debajo de este nivel</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" disabled={isSubmitting} asChild>
