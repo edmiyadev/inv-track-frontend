@@ -15,8 +15,8 @@ import { z } from "zod"
 import { useAuthStore } from "@/lib/store/auth"
 import { productsApi } from "@/lib/api/products"
 import { categoriesApi } from "@/lib/api/categories"
-import { suppliersApi } from "@/lib/api/suppliers"
-import type { Product } from "@/lib/api/types"
+import { taxesApi } from "@/lib/api/taxes"
+import type { Product, Tax } from "@/lib/api/types"
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
 
@@ -34,6 +34,7 @@ const productFormSchema = z.object({
   reorder_point: z.coerce.number().int("El punto de reorden debe ser un número entero").min(0, "El punto de reorden no puede ser negativo"),
   product_category_id: z.string().optional(),
   supplier_id: z.string().optional(),
+  tax_id: z.string().optional(),
 })
 
 type ProductFormData = z.infer<typeof productFormSchema>
@@ -73,20 +74,19 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
     staleTime: 60000, // 1 minute
   })
 
-  // Fetch suppliers
-  const { data: suppliersData, isLoading: isLoadingSuppliers } = useQuery({
-    queryKey: ['suppliers', 'all'],
+  // Fetch taxes
+  const { data: taxesData, isLoading: isLoadingTaxes } = useQuery({
+    queryKey: ['taxes', 'all'],
     queryFn: async () => {
       if (!accessToken) throw new Error('No token')
-      // Fetch all active suppliers
-      return suppliersApi.getAll(accessToken, 1, 100)
+      return taxesApi.getAll(accessToken, 1, 100)
     },
     enabled: !!accessToken,
-    staleTime: 60000, // 1 minute
+    staleTime: 60000,
   })
 
   const categories = categoriesData?.data.data || []
-  const suppliers = suppliersData?.data.data.filter(s => s.is_active) || []
+  const taxes: Tax[] = taxesData?.data.data.filter((t: Tax) => t.is_active) || []
 
   const {
     register,
@@ -109,7 +109,7 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
   })
 
   const categoryId = watch("product_category_id")
-  const supplierId = watch("supplier_id")
+  const taxId = watch("tax_id")
 
   const handleFormSubmit = async (data: ProductFormData) => {
     if (!accessToken) {
@@ -192,6 +192,27 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
               {errors.product_category_id && (
                 <p className="text-sm text-destructive">{errors.product_category_id.message}</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tax_id">Impuesto</Label>
+              <Select
+                value={taxId || "none"}
+                onValueChange={(value) => setValue("tax_id", value === "none" ? "" : value)}
+                disabled={isLoadingTaxes}
+              >
+                <SelectTrigger id="tax_id">
+                  <SelectValue placeholder={isLoadingTaxes ? "Cargando..." : "Selecciona un impuesto"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin impuesto</SelectItem>
+                  {taxes.map((tax) => (
+                    <SelectItem key={tax.id} value={tax.id.toString()}>
+                      {tax.name} ({tax.percentage}%)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
           </div>
