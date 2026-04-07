@@ -8,11 +8,11 @@ import type { PurchaseOrderFormData } from "@/lib/validations"
 import { purchasingApi } from "@/lib/api/purchasing"
 import { productsApi } from "@/lib/api/products"
 import { warehousesApi } from "@/lib/api/warehouses"
+import { taxesApi } from "@/lib/api/taxes"
 import { useAuthStore } from "@/lib/store/auth"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id: string }> }) {
@@ -33,6 +33,12 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
   const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
     queryKey: ["products", "all"],
     queryFn: () => productsApi.getAll(accessToken!, 1, 1000),
+    enabled: !!accessToken,
+  })
+
+  const { data: taxesResponse, isLoading: isLoadingTaxes } = useQuery({
+    queryKey: ["taxes", "all"],
+    queryFn: () => taxesApi.getAll(accessToken!, 1, 1000),
     enabled: !!accessToken,
   })
 
@@ -64,7 +70,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
     router.push("/purchasing")
   }
 
-  if (isLoadingOrder || isLoadingProducts) {
+  if (isLoadingOrder || isLoadingProducts || isLoadingTaxes) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
@@ -84,7 +90,6 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
         </Alert>
         <Button asChild variant="outline">
           <Link href="/purchasing">
-            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Purchasing
           </Link>
         </Button>
@@ -109,6 +114,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
           suppliers={order?.supplier ? [order.supplier] : []}
           products={productsResponse?.data.data || []}
           warehouses={order?.warehouse ? [order.warehouse] : []}
+          taxes={taxesResponse?.data.data || []}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />

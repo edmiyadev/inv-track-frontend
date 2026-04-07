@@ -7,6 +7,7 @@ import type { PurchaseOrderFormData } from "@/lib/validations"
 import { purchasingApi } from "@/lib/api/purchasing"
 import { productsApi } from "@/lib/api/products"
 import { warehousesApi } from "@/lib/api/warehouses"
+import { taxesApi } from "@/lib/api/taxes"
 import { useAuthStore } from "@/lib/store/auth"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -36,12 +37,17 @@ export default function NewPurchaseOrderPage() {
     enabled: !!accessToken,
   })
 
+  const { data: taxesResponse, isLoading: isLoadingTaxes } = useQuery({
+    queryKey: ["taxes", "all"],
+    queryFn: () => taxesApi.getAll(accessToken!, 1, 1000),
+    enabled: !!accessToken,
+  })
+
   const mutation = useMutation({
     mutationFn: (data: PurchaseOrderFormData) => purchasingApi.createPurchase({
       supplier_id: data.supplierId,
       warehouse_id: data.warehouseId || null,
-      order_date: data.orderDate,
-      notes: data.notes || null,
+notes: data.notes || null,
       items: data.items.map(item => ({
         product_id: item.productId,
         quantity: item.quantity,
@@ -66,7 +72,7 @@ export default function NewPurchaseOrderPage() {
     router.push("/purchasing")
   }
 
-  if (isLoadingSuppliers || isLoadingProducts || isLoadingWarehouses) {
+  if (isLoadingSuppliers || isLoadingProducts || isLoadingWarehouses || isLoadingTaxes) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
@@ -89,6 +95,7 @@ export default function NewPurchaseOrderPage() {
         suppliers={suppliersResponse?.data.data || []}
         products={productsResponse?.data.data || []}
         warehouses={warehousesResponse?.data.data || []}
+        taxes={taxesResponse?.data.data || []}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
       />

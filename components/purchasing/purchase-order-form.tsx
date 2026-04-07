@@ -10,18 +10,19 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { purchaseOrderFormSchema, type PurchaseOrderFormData } from "@/lib/validations"
-import type { Purchase, Supplier, Product, Warehouse } from "@/lib/api/types"
+import type { Purchase, Supplier, Product, Warehouse, Tax } from "@/lib/api/types"
 
 interface PurchaseOrderFormProps {
   order?: Purchase
   suppliers: Supplier[]
   products: Product[]
   warehouses: Warehouse[]
+  taxes: Tax[]
   onSubmit: (data: PurchaseOrderFormData) => Promise<void>
   onCancel: () => void
 }
 
-export function PurchaseOrderForm({ order, suppliers, products, warehouses, onSubmit, onCancel }: PurchaseOrderFormProps) {
+export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxes, onSubmit, onCancel }: PurchaseOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -42,12 +43,13 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, onSu
           productId: item.product_id,
           quantity: item.quantity,
           unitPrice: parseFloat(item.unit_price),
+          taxId: undefined,
         })) || [],
         notes: order.notes || "",
       }
       : {
         orderDate: new Date().toISOString().split("T")[0],
-        items: [{ productId: 0, quantity: 1, unitPrice: 0 }],
+        items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined }],
       },
   })
 
@@ -150,7 +152,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, onSu
         <CardContent className="space-y-4">
           {fields.map((field, index) => (
             <div key={field.id} className="flex gap-4 items-start">
-              <div className="flex-1 grid gap-4 md:grid-cols-3">
+              <div className="flex-1 grid gap-4 md:grid-cols-4">
                 <div className="space-y-2">
                   <Label>Product</Label>
                   <Select
@@ -200,6 +202,25 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, onSu
                     <p className="text-sm text-destructive">{errors.items[index]?.unitPrice?.message}</p>
                   )}
                 </div>
+
+                <div className="space-y-2">
+                  <Label>Tax</Label>
+                  <Select
+                    value={watch(`items.${index}.taxId`)?.toString()}
+                    onValueChange={(value) => setValue(`items.${index}.taxId`, parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tax" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {taxes.map((tax) => (
+                        <SelectItem key={tax.id} value={tax.id.toString()}>
+                          {tax.name} ({tax.percentage}%)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {fields.length > 1 && (
@@ -215,7 +236,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, onSu
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0 })}
+            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined })}
             className="w-full"
           >
             + Add Item
