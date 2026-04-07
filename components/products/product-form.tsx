@@ -194,30 +194,6 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="supplier_id">Proveedor</Label>
-              <Select
-                value={supplierId || "none"}
-                onValueChange={(value) => setValue("supplier_id", value === "none" ? "" : value)}
-                disabled={isLoadingSuppliers}
-              >
-                <SelectTrigger id="supplier_id">
-                  <SelectValue placeholder={isLoadingSuppliers ? "Cargando..." : "Selecciona un proveedor"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sin proveedor</SelectItem>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id.toString()}>
-                      {supplier.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.supplier_id && (
-                <p className="text-sm text-destructive">{errors.supplier_id.message}</p>
-              )}
-              <p className="text-xs text-muted-foreground">Solo se muestran proveedores activos</p>
-            </div>
           </div>
         </CardContent>
       </Card>
