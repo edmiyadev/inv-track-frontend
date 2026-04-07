@@ -146,6 +146,15 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
 
       <Card>
         <CardHeader>
+          <CardTitle>Additional Notes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea {...register("notes")} placeholder="Enter any additional notes or instructions" rows={4} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Order Items</CardTitle>
           <CardDescription>Add products to this purchase order</CardDescription>
         </CardHeader>
@@ -256,15 +265,6 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
               <span>${(subtotal * 1.18).toFixed(2)}</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Notes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea {...register("notes")} placeholder="Enter any additional notes or instructions" rows={4} />
         </CardContent>
       </Card>
 
