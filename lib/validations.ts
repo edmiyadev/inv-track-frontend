@@ -137,6 +137,7 @@ export type SupplierFormData = z.infer<typeof supplierFormSchema>
 export const purchaseOrderFormSchema = z.object({
   supplierId: z.coerce.number().min(1, "Please select a supplier"),
   warehouseId: z.coerce.number().optional(),
+  orderDate: z.string().min(1, "Please select a date"),
   items: z
     .array(
       z.object({

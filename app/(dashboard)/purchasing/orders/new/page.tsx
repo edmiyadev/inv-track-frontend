@@ -40,6 +40,7 @@ export default function NewPurchaseOrderPage() {
     mutationFn: (data: PurchaseOrderFormData) => purchasingApi.createPurchase({
       supplier_id: data.supplierId,
       warehouse_id: data.warehouseId || null,
+      order_date: data.orderDate,
       notes: data.notes || null,
       items: data.items.map(item => ({
         product_id: item.productId,
