@@ -15,8 +15,8 @@ import { z } from "zod"
 import { useAuthStore } from "@/lib/store/auth"
 import { productsApi } from "@/lib/api/products"
 import { categoriesApi } from "@/lib/api/categories"
-import { suppliersApi } from "@/lib/api/suppliers"
-import type { Product } from "@/lib/api/types"
+import { taxesApi } from "@/lib/api/taxes"
+import type { Product, Tax } from "@/lib/api/types"
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
 
@@ -34,6 +34,7 @@ const productFormSchema = z.object({
   reorder_point: z.coerce.number().int("El punto de reorden debe ser un número entero").min(0, "El punto de reorden no puede ser negativo"),
   product_category_id: z.string().optional(),
   supplier_id: z.string().optional(),
+  tax_id: z.string().optional(),
 })
 
 type ProductFormData = z.infer<typeof productFormSchema>
@@ -73,20 +74,19 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
     staleTime: 60000, // 1 minute
   })
 
-  // Fetch suppliers
-  const { data: suppliersData, isLoading: isLoadingSuppliers } = useQuery({
-    queryKey: ['suppliers', 'all'],
+  // Fetch taxes
+  const { data: taxesData, isLoading: isLoadingTaxes } = useQuery({
+    queryKey: ['taxes', 'all'],
     queryFn: async () => {
       if (!accessToken) throw new Error('No token')
-      // Fetch all active suppliers
-      return suppliersApi.getAll(accessToken, 1, 100)
+      return taxesApi.getAll(accessToken, 1, 100)
     },
     enabled: !!accessToken,
-    staleTime: 60000, // 1 minute
+    staleTime: 60000,
   })
 
   const categories = categoriesData?.data.data || []
-  const suppliers = suppliersData?.data.data.filter(s => s.is_active) || []
+  const taxes: Tax[] = taxesData?.data.data.filter((t: Tax) => t.is_active) || []
 
   const {
     register,
@@ -109,7 +109,7 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
   })
 
   const categoryId = watch("product_category_id")
-  const supplierId = watch("supplier_id")
+  const taxId = watch("tax_id")
 
   const handleFormSubmit = async (data: ProductFormData) => {
     if (!accessToken) {
@@ -195,76 +195,30 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="supplier_id">Proveedor</Label>
+              <Label htmlFor="tax_id">Impuesto</Label>
               <Select
-                value={supplierId || "none"}
-                onValueChange={(value) => setValue("supplier_id", value === "none" ? "" : value)}
-                disabled={isLoadingSuppliers}
+                value={taxId || "none"}
+                onValueChange={(value) => setValue("tax_id", value === "none" ? "" : value)}
+                disabled={isLoadingTaxes}
               >
-                <SelectTrigger id="supplier_id">
-                  <SelectValue placeholder={isLoadingSuppliers ? "Cargando..." : "Selecciona un proveedor"} />
+                <SelectTrigger id="tax_id">
+                  <SelectValue placeholder={isLoadingTaxes ? "Cargando..." : "Selecciona un impuesto"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin proveedor</SelectItem>
-                  {suppliers.map((supplier) => (
-                    <SelectItem key={supplier.id} value={supplier.id.toString()}>
-                      {supplier.name}
+                  <SelectItem value="none">Sin impuesto</SelectItem>
+                  {taxes.map((tax) => (
+                    <SelectItem key={tax.id} value={tax.id.toString()}>
+                      {tax.name} ({tax.percentage}%)
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.supplier_id && (
-                <p className="text-sm text-destructive">{errors.supplier_id.message}</p>
-              )}
-              <p className="text-xs text-muted-foreground">Solo se muestran proveedores activos</p>
             </div>
+
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Precio e Inventario</CardTitle>
-          <CardDescription>Configura el precio y detalles de gestión de stock</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="price">
-                Precio <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input
-                  id="price"
-                  type="text"
-                  placeholder="0.00"
-                  className="pl-7"
-                  {...register("price")}
-                />
-              </div>
-              {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="stock_quantity">
-                Stock Actual <span className="text-destructive">*</span>
-              </Label>
-              <Input id="stock_quantity" type="number" placeholder="0" {...register("stock_quantity")} />
-              {errors.stock_quantity && <p className="text-sm text-destructive">{errors.stock_quantity.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="reorder_point">
-                Punto de Reorden <span className="text-destructive">*</span>
-              </Label>
-              <Input id="reorder_point" type="number" placeholder="0" {...register("reorder_point")} />
-              {errors.reorder_point && <p className="text-sm text-destructive">{errors.reorder_point.message}</p>}
-              <p className="text-xs text-muted-foreground">Alerta cuando el stock caiga por debajo de este nivel</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" disabled={isSubmitting} asChild>
