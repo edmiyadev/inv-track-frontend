@@ -9,12 +9,6 @@ export default function InventoryHistoryPage() {
       <PageHeader
         title="Stock Movement History"
         description="View all inventory transactions and adjustments"
-        actions={
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export History
-          </Button>
-        }
       />
 
       <StockHistoryTimeline />

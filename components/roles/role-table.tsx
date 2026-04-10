@@ -103,12 +103,6 @@ export function RoleTable() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Link href="/roles/new">
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nuevo Rol
-                    </Button>
-                </Link>
             </div>
 
             <div className="rounded-md border">

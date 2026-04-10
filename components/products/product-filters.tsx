@@ -37,23 +37,6 @@ export function ProductFilters() {
           </SelectContent>
         </Select>
       </div>
-
-      <div className="w-full md:w-[200px]">
-        <Label htmlFor="status" className="text-sm font-medium">
-          Estado de Stock
-        </Label>
-        <Select defaultValue="all">
-          <SelectTrigger id="status" className="mt-1.5">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos los Estados</SelectItem>
-            <SelectItem value="in-stock">En Stock</SelectItem>
-            <SelectItem value="low-stock">Stock Bajo</SelectItem>
-            <SelectItem value="out-of-stock">Sin Stock</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
     </div>
   )
 }

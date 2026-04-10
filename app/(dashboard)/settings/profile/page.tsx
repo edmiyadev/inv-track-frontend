@@ -14,20 +14,6 @@ export default function ProfileSettingsPage() {
           <CardDescription>Update your personal information and contact details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xl">AD</AvatarFallback>
-            </Avatar>
-            <div className="space-y-2">
-              <Button variant="outline" size="sm">
-                Change Avatar
-              </Button>
-              <p className="text-xs text-muted-foreground">JPG, PNG or GIF. Max size 2MB.</p>
-            </div>
-          </div>
-
-          <Separator />
-
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="first-name">First Name</Label>
@@ -45,10 +31,6 @@ export default function ProfileSettingsPage() {
             <Input id="email" type="email" placeholder="your@email.com" defaultValue="admin@inventory.com" />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" />
-          </div>
         </CardContent>
       </Card>
 

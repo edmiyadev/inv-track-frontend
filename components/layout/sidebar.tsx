@@ -46,10 +46,11 @@ import { useFilteredNavigation } from "@/hooks/use-filtered-navigation"
 // Grupos de navegación
 const navigationGroups = [
   {
-    name: "Operaciones",
+    name: "Comercial",
     icon: ShoppingBag,
     isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
+      { name: "Proveedores", href: "/suppliers", icon: Truck, permission: "Supplier" as const },
       { name: "Compras", href: "/purchasing", icon: ShoppingCart, permission: "Purchase" as const },
       { name: "Ventas", href: "/sales", icon: DollarSign, permission: "Sale" as const },
     ],
@@ -62,20 +63,25 @@ const navigationGroups = [
       { name: "Productos", href: "/products", icon: Package, permission: "Product" as const },
       { name: "Categorías", href: "/categories", icon: FolderTree, permission: "Category" as const },
       { name: "Almacenes", href: "/warehouses", icon: Building2, permission: "Warehouse" as const },
-      { name: "Proveedores", href: "/suppliers", icon: Truck, permission: "Supplier" as const },
+    ],
+  },
+  {
+    name: "Control",
+    icon: Warehouse,
+    isCollapsible: true,
+    items: [
       { name: "Stock", href: "/inventory", icon: Warehouse, permission: "InventoryStock" as const },
       { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "InventoryMovement" as const },
     ],
   },
   {
-    name: "Configuración",
+    name: "Sistema",
     icon: Settings,
     isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
+      { name: "Impuestos", href: "/taxes", icon: Percent, permission: "Tax" as const },
       { name: "Usuarios", href: "/users", icon: Users, permission: "User" as const },
       { name: "Roles y Permisos", href: "/roles", icon: Shield, permission: "Role" as const },
-      { name: "Impuestos", href: "/taxes", icon: Percent, permission: "Tax" as const },
-      // { name: "Preferencias", href: "/settings", icon: UserCog, permission: "Settings" as const },
     ],
   },
 ]
@@ -83,7 +89,7 @@ const navigationGroups = [
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  const [openGroups, setOpenGroups] = useState<string[]>(["Dashboard", "Operaciones", "Inventario", "Configuración"])
+  const [openGroups, setOpenGroups] = useState<string[]>(["Dashboard", "Comercial", "Inventario", "Control", "Sistema"])
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 

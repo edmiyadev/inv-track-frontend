@@ -10,13 +10,7 @@ export default function SettingsLayout({
   return (
     <div className="space-y-6">
       <PageHeader title="Settings" description="Manage your account and application preferences" />
-
-      <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-        <aside className="space-y-4">
-          <SettingsNav />
-        </aside>
-        <div>{children}</div>
-      </div>
+      <div>{children}</div>
     </div>
   )
 }

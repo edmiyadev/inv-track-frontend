@@ -9,58 +9,6 @@ export default function GeneralSettingsPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Company Information</CardTitle>
-          <CardDescription>Update your company details and business information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="company-name">Company Name</Label>
-              <Input id="company-name" placeholder="Enter company name" defaultValue="Inventory Corp" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="company-email">Company Email</Label>
-              <Input
-                id="company-email"
-                type="email"
-                placeholder="contact@company.com"
-                defaultValue="contact@inventory.com"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="company-address">Address</Label>
-            <Input id="company-address" placeholder="Enter company address" defaultValue="123 Business St" />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Enter city" defaultValue="San Francisco" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
-              <Select defaultValue="us">
-                <SelectTrigger id="country">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="us">United States</SelectItem>
-                  <SelectItem value="uk">United Kingdom</SelectItem>
-                  <SelectItem value="ca">Canada</SelectItem>
-                  <SelectItem value="au">Australia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle>Regional Settings</CardTitle>
           <CardDescription>Configure timezone, currency, and date formats</CardDescription>
         </CardHeader>
