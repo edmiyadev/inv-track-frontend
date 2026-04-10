@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -26,6 +27,7 @@ interface CategoryFormProps {
 
 export function CategoryForm({ category, categoryId }: CategoryFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const isEditing = !!categoryId
 
@@ -76,6 +78,7 @@ export function CategoryForm({ category, categoryId }: CategoryFormProps) {
         await categoriesApi.create(data, accessToken)
         alert("Categoría creada exitosamente")
       }
+      await queryClient.invalidateQueries({ queryKey: ["categories"] })
       router.push("/categories")
       router.refresh()
     } catch (error) {

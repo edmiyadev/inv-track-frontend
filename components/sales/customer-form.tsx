@@ -1,171 +1,202 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { customerFormSchema, type CustomerFormData } from "@/lib/validations"
-import type { Customer } from "@/types"
+import * as z from "zod"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/lib/store/auth"
+import { customersApi } from "@/lib/api/customers"
+import type { Customer } from "@/lib/api/types"
+
+const customerSchema = z.object({
+  name: z.string().min(1, "El nombre es requerido").max(255, "El nombre es muy largo"),
+  tax_id: z.string().max(50, "El RNC es muy largo").transform(val => val === "" ? null : val).nullable().optional(),
+  phone_number: z.string().max(50, "El teléfono es muy largo").transform(val => val === "" ? null : val).nullable().optional(),
+  email: z.string().transform(val => val === "" ? null : val).nullable().optional().refine(
+    (val) => !val || z.string().email().safeParse(val).success,
+    { message: "Email inválido" }
+  )
+})
+
+type CustomerFormData = z.infer<typeof customerSchema>
 
 interface CustomerFormProps {
   customer?: Customer
-  onSubmit: (data: CustomerFormData) => void
-  onCancel: () => void
+  customerId?: number
 }
 
-export function CustomerForm({ customer, onSubmit, onCancel }: CustomerFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function CustomerForm({ customer, customerId }: CustomerFormProps) {
+  const router = useRouter()
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const isEditing = !!customerId
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setValue,
-    watch,
   } = useForm<CustomerFormData>({
-    resolver: zodResolver(customerFormSchema),
-    defaultValues: customer
-      ? {
-          name: customer.name,
-          contactPerson: customer.contactPerson,
-          email: customer.email,
-          phone: customer.phone,
-          address: customer.address,
-          creditLimit: customer.creditLimit,
-          paymentTerms: customer.paymentTerms,
-          status: customer.status,
-        }
-      : {
-          status: "active",
-          creditLimit: 10000,
-        },
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: "",
+      tax_id: "",
+      phone_number: "",
+      email: "",
+    },
   })
 
-  const handleFormSubmit = async (data: CustomerFormData) => {
-    setIsSubmitting(true)
+  useEffect(() => {
+    const loadCustomer = async () => {
+      if (!customerId || !accessToken) return
+
+      try {
+        const response = await customersApi.getById(customerId, accessToken)
+        const customerData = response.data
+        setValue("name", customerData.name)
+        setValue("tax_id", customerData.tax_id || "")
+        setValue("phone_number", customerData.phone_number || "")
+        setValue("email", customerData.email || "")
+      } catch (error) {
+        console.error("Error loading customer:", error)
+        alert("Error al cargar el cliente")
+      }
+    }
+
+    if (isEditing && !customer) {
+      loadCustomer()
+    } else if (customer) {
+      setValue("name", customer.name)
+      setValue("tax_id", customer.tax_id || "")
+      setValue("phone_number", customer.phone_number || "")
+      setValue("email", customer.email || "")
+    }
+  }, [customerId, customer, accessToken, isEditing, setValue])
+
+
+  const onSubmit = async (data: CustomerFormData) => {
+    if (!accessToken) {
+      alert("No estás autenticado")
+      return
+    }
+
     try {
-      await onSubmit(data)
-    } finally {
-      setIsSubmitting(false)
+      if (isEditing && customerId) {
+        await customersApi.update(customerId, data, accessToken)
+        alert("Cliente actualizado exitosamente")
+      } else {
+        await customersApi.create(data, accessToken)
+        alert("Cliente creado exitosamente")
+      }
+      router.push("/customers")
+      router.refresh()
+    } catch (error) {
+      console.error("Error saving customer:", error)
+      alert(isEditing ? "Error al actualizar el cliente" : "Error al crear el cliente")
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer Information</CardTitle>
-          <CardDescription>Enter the customer's basic information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+    <Card>
+      <CardHeader>
+        <CardTitle>{isEditing ? "Editar Cliente" : "Nuevo Cliente"}</CardTitle>
+        <CardDescription>
+          {isEditing
+            ? "Actualiza la información del cliente"
+            : "Completa el formulario para crear un nuevo cliente"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">
-                Customer Name <span className="text-destructive">*</span>
+                Nombre <span className="text-destructive">*</span>
               </Label>
-              <Input id="name" {...register("name")} placeholder="Enter customer name" />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+              <Input
+                id="name"
+                placeholder="Ej: Juan Pérez"
+                {...register("name")}
+                disabled={isSubmitting}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive">{errors.name.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contactPerson">
-                Contact Person <span className="text-destructive">*</span>
+              <Label htmlFor="tax_id">
+                Tax ID
               </Label>
-              <Input id="contactPerson" {...register("contactPerson")} placeholder="Enter contact person name" />
-              {errors.contactPerson && <p className="text-sm text-destructive">{errors.contactPerson.message}</p>}
+              <Input
+                id="tax_id"
+                placeholder="Ej: 123456789"
+                {...register("tax_id")}
+                disabled={isSubmitting}
+              />
+              {errors.tax_id && (
+                <p className="text-sm text-destructive">{errors.tax_id.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone_number">
+                Teléfono
+              </Label>
+              <Input
+                id="phone_number"
+                type="tel"
+                placeholder="Ej: (809) 555-1234"
+                {...register("phone_number")}
+                disabled={isSubmitting}
+              />
+              {errors.phone_number && (
+                <p className="text-sm text-destructive">{errors.phone_number.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">
-                Email <span className="text-destructive">*</span>
-              </Label>
-              <Input id="email" type="email" {...register("email")} placeholder="customer@example.com" />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">
-                Phone <span className="text-destructive">*</span>
-              </Label>
-              <Input id="phone" {...register("phone")} placeholder="+1 (555) 123-4567" />
-              {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address">
-              Address <span className="text-destructive">*</span>
-            </Label>
-            <Textarea id="address" {...register("address")} placeholder="Enter full address" rows={3} />
-            {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="creditLimit">
-                Credit Limit <span className="text-destructive">*</span>
+                Email
               </Label>
               <Input
-                id="creditLimit"
-                type="number"
-                step="0.01"
-                {...register("creditLimit", { valueAsNumber: true })}
-                placeholder="10000"
+                id="email"
+                type="email"
+                placeholder="Ej: cliente@email.com"
+                {...register("email")}
+                disabled={isSubmitting}
               />
-              {errors.creditLimit && <p className="text-sm text-destructive">{errors.creditLimit.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="paymentTerms">
-                Payment Terms <span className="text-destructive">*</span>
-              </Label>
-              <Select value={watch("paymentTerms")} onValueChange={(value) => setValue("paymentTerms", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select payment terms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Net 15">Net 15</SelectItem>
-                  <SelectItem value="Net 30">Net 30</SelectItem>
-                  <SelectItem value="Net 45">Net 45</SelectItem>
-                  <SelectItem value="Net 60">Net 60</SelectItem>
-                  <SelectItem value="Due on Receipt">Due on Receipt</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.paymentTerms && <p className="text-sm text-destructive">{errors.paymentTerms.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={watch("status")}
-                onValueChange={(value: "active" | "inactive") => setValue("status", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : customer ? "Update Customer" : "Create Customer"}
-        </Button>
-      </div>
-    </form>
+          <div className="flex gap-4 pt-4">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1"
+            >
+              {isSubmitting
+                ? (isEditing ? "Actualizando..." : "Creando...")
+                : (isEditing ? "Actualizar Cliente" : "Crear Cliente")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/customers")}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

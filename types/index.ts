@@ -130,13 +130,9 @@ export interface PurchaseInvoice {
 export interface Customer {
   id: string
   name: string
-  contactPerson: string
   email: string
-  phone: string
-  address: string
-  status: "active" | "inactive"
-  creditLimit: number
-  paymentTerms: string
+  phone_number: string
+  tax_id: string
   createdAt: Date
   updatedAt: Date
 }

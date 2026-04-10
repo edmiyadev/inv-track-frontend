@@ -280,6 +280,43 @@ export interface UpdateSupplierData {
   is_active?: boolean
 }
 
+// Customer Types
+export interface Customer {
+  id: number
+  name: string
+  tax_id: string | null
+  phone_number: string | null
+  email: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CustomersResponse {
+  status: string
+  message: string
+  data: PaginatedData<Customer>
+}
+
+export interface CustomerResponse {
+  status: string
+  message: string
+  data: Customer
+}
+
+export interface CreateCustomerData {
+  name: string
+  tax_id?: string | null
+  phone_number?: string | null
+  email?: string | null
+}
+
+export interface UpdateCustomerData {
+  name?: string
+  tax_id?: string | null
+  phone_number?: string | null
+  email?: string | null
+}
+
 // Warehouse Types
 export interface Warehouse {
   id: number

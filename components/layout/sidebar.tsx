@@ -46,12 +46,20 @@ import { useFilteredNavigation } from "@/hooks/use-filtered-navigation"
 // Grupos de navegación
 const navigationGroups = [
   {
-    name: "Comercial",
+    name: "Compras",
     icon: ShoppingBag,
     isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
       { name: "Proveedores", href: "/suppliers", icon: Truck, permission: "Supplier" as const },
       { name: "Compras", href: "/purchasing", icon: ShoppingCart, permission: "Purchase" as const },
+    ],
+  },
+  {
+    name: "Ventas",
+    icon: ShoppingCart,
+    isCollapsible: true, // Siempre renderizar como grupo colapsable
+    items: [
+      { name: "Clientes", href: "/customers", icon: User, permission: "Customer" as const },
       { name: "Ventas", href: "/sales", icon: DollarSign, permission: "Sale" as const },
     ],
   },
@@ -89,7 +97,7 @@ const navigationGroups = [
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  const [openGroups, setOpenGroups] = useState<string[]>(["Dashboard", "Comercial", "Inventario", "Control", "Sistema"])
+  const [openGroups, setOpenGroups] = useState<string[]>(["Dashboard", "Compras", "Ventas", "Inventario", "Control", "Sistema"])
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
 
