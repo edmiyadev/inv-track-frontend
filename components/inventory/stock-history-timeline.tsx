@@ -6,6 +6,7 @@ import { ArrowDownIcon, ArrowUpIcon, RefreshCw, Loader2 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { inventoryApi } from "@/lib/api/inventory"
 import { useAuthStore } from "@/lib/store/auth"
+import type { Movement, MovementItem } from "@/lib/api/types"
 
 export function StockHistoryTimeline() {
   const { accessToken } = useAuthStore()
@@ -17,8 +18,7 @@ export function StockHistoryTimeline() {
   })
 
   // Handle both paginated (data.data) and simple array (data) responses
-  const responseData = movementsResponse as any
-  const movements = responseData?.data?.data || responseData?.data || []
+  const movements: Movement[] = movementsResponse?.data?.data || []
 
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
@@ -44,8 +44,8 @@ export function StockHistoryTimeline() {
   }
 
   // Flatten movements to items for display
-  const historyItems = movements.flatMap(movement =>
-    (movement.items || []).map(item => ({
+  const historyItems = movements.flatMap((movement: Movement) =>
+    (movement.items || []).map((item: MovementItem) => ({
       id: `${movement.id}-${item.id}`,
       productName: item.product?.name || "Unknown Product",
       type: movement.movement_type,
