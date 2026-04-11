@@ -115,19 +115,30 @@ export function PurchaseOrderTable() {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        {order.status === 'pending' && (
-                          <DropdownMenuItem asChild>
-                            <Link href={`/purchasing/orders/${order.id}/edit`}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Edit
-                            </Link>
-                          </DropdownMenuItem>
+                        {order.status === 'draft' && (
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/purchasing/orders/${order.id}/edit`}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                            // onClick={() => handleDeleteClick(product)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </>
+
                         )}
-                        <DropdownMenuSeparator />
+                        {/* <DropdownMenuSeparator />
                         <DropdownMenuItem>
                           <FileText className="mr-2 h-4 w-4" />
                           Download PDF
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

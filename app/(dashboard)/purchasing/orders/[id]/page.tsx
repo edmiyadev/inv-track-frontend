@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Pencil, FileText, Truck, ArrowLeft } from "lucide-react"
+import { Pencil, ArrowLeft, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { purchasingApi } from "@/lib/api/purchasing"
@@ -15,11 +15,26 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import type { PurchaseItem, Tax } from "@/lib/api/types"
 import { taxesApi } from "@/lib/api/taxes"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useRouter } from "next/navigation"
 
 export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const { accessToken } = useAuthStore()
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
+  
   const { data: response, isLoading, isError, error } = useQuery({
     queryKey: ["purchase", resolvedParams.id],
     queryFn: () => purchasingApi.getPurchaseById(parseInt(resolvedParams.id), accessToken!),
@@ -31,6 +46,23 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
     queryFn: () => taxesApi.getAll(accessToken!, 1, 1000),
     enabled: !!accessToken,
   })
+
+  const handleDelete = async () => {
+    if (!accessToken || !order) return
+
+    try {
+      setIsDeleting(true)
+      await purchasingApi.deletePurchase(parseInt(resolvedParams.id), accessToken)
+      router.push('/purchasing')
+
+      router.refresh()
+    } catch (err) {
+      console.error('Error deleting purchase:', err)
+      alert('Error al eliminar el pedido')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -99,20 +131,49 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
         description={`Purchase order for ${order.supplier?.name || 'Unknown Supplier'}`}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" asChild>
+            <Button asChild variant="outline">
+              <Link href="/purchasing">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver
+              </Link>
+            </Button>
+            <Button asChild>
               <Link href={`/purchasing/orders/${resolvedParams.id}/edit`}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Link>
             </Button>
-            <Button variant="outline">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción no se puede deshacer. Esto eliminará permanentemente el pedido
+                    <strong> {order.id}</strong> del sistema.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            {/* <Button variant="outline">
               <FileText className="mr-2 h-4 w-4" />
               Generate Invoice
-            </Button>
-            <Button>
-              <Truck className="mr-2 h-4 w-4" />
-              Receive Goods
-            </Button>
+            </Button> */}
           </div>
         }
       />

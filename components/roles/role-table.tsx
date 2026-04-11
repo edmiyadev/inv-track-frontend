@@ -32,7 +32,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, Plus, Search, Loader2, Shield } from "lucide-react"
+import { MoreHorizontal, Plus, Search, Loader2, Shield, Eye, Pencil, Trash2 } from "lucide-react"
 import { rolesApi } from "@/lib/api/roles"
 import { useAuthStore } from "@/lib/store/auth"
 import { format } from "date-fns"
@@ -149,10 +149,14 @@ export function RoleTable() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
                                                 <DropdownMenuItem onClick={() => router.push(`/roles/${role.id}`)}>
+                                                    <Eye className="mr-2 h-4 w-4" />
+
                                                     Ver detalles
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => router.push(`/roles/${role.id}/edit`)}>
+                                                    <Pencil className="mr-2 h-4 w-4" />
                                                     Editar
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
@@ -160,6 +164,7 @@ export function RoleTable() {
                                                     className="text-destructive focus:text-destructive"
                                                     onClick={() => setRoleToDelete(role.id)}
                                                 >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
                                                     Eliminar
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>

@@ -58,4 +58,8 @@ export const purchasingApi = {
   updatePurchase: async (id: number, data: UpdatePurchaseData, token: string): Promise<PurchaseResponse> => {
     return apiClient.put<PurchaseResponse>(`/purchases/${id}`, data, token)
   },
+
+  deletePurchase: async (id: number, token: string): Promise<void> => {
+    return apiClient.delete(`/purchases/${id}`, token)
+  }
 }

@@ -222,7 +222,7 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" disabled={isSubmitting} asChild>
-          <Link href={mode === "edit" && productId ? `/products/${productId}` : "/products"}>
+          <Link href= {`/products`}>
             Cancelar
           </Link>
         </Button>

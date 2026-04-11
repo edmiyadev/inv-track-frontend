@@ -113,51 +113,50 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link href="/users">
-                        <ArrowLeft className="h-4 w-4" />
-                    </Link>
-                </Button>
-                <div className="flex-1">
-                    <PageHeader
-                        title={user.name}
-                        description={`Usuario: ${user.username}`}
-                        actions={
-                            <div className="flex gap-2">
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="outline" size="icon" disabled={isDeleting}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario
-                                                <strong> {user.name}</strong> del sistema.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                                {isDeleting ? 'Eliminando...' : 'Eliminar'}
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                                <Button asChild>
-                                    <Link href={`/users/${resolvedParams.id}/edit`}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Editar Usuario
-                                    </Link>
+            <PageHeader
+                title={user.name}
+                description={`Usuario: ${user.username}`}
+                actions={
+                    <div className="flex gap-2">
+                        <Button variant="outline" asChild>
+                            <Link href="/users">
+                                <ArrowLeft className="h-4 w-4" />
+                                Volver
+                            </Link>
+                        </Button>
+                        <Button asChild>
+                            <Link href={`/users/${resolvedParams.id}/edit`}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Editar
+                            </Link>
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" disabled={isDeleting}>
+                                    <Trash2 className="h-4 w-4" />
+                                    Eliminar
                                 </Button>
-                            </div>
-                        }
-                    />
-                </div>
-            </div>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario
+                                        <strong> {user.name}</strong> del sistema.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
+                    </div>
+                }
+            />
 
             <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2 space-y-6">

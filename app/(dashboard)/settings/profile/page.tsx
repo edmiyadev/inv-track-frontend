@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import Link from "next/link"
 
 export default function ProfileSettingsPage() {
   return (
@@ -57,8 +58,11 @@ export default function ProfileSettingsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button>Save Changes</Button>
+      <div className="flex justify-end gap-4">
+        <Link href="/dashboard">
+          <Button variant="outline" >Cancelar</Button>
+          <Button variant="default">Guardar Cambios</Button>
+        </Link>
       </div>
     </div>
   )

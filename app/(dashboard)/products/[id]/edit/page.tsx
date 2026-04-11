@@ -22,7 +22,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     const fetchProduct = async () => {
       if (!accessToken) return
-      
+
       try {
         setIsLoading(true)
         setError(null)
@@ -68,14 +68,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href={`/products/${resolvedParams.id}`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <PageHeader title="Editar Producto" description={`Editando: ${product.name}`} />
-      </div>
+      <PageHeader title="Editar Producto" description={`Editando: ${product.name}`} />
 
       <ProductForm mode="edit" defaultValues={product} productId={parseInt(resolvedParams.id)} />
     </div>
