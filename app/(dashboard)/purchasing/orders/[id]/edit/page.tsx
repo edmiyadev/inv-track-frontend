@@ -47,8 +47,9 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
       notes: data.notes || null,
       items: data.items.map(item => ({
         product_id: item.productId,
+        tax_id: item.taxId ?? null,
         quantity: item.quantity,
-        unit_price: item.unitPrice
+        unit_price: item.unitPrice,
       }))
     }, accessToken!),
     onSuccess: () => {

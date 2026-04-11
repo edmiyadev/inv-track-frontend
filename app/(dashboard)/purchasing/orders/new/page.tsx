@@ -47,11 +47,12 @@ export default function NewPurchaseOrderPage() {
     mutationFn: (data: PurchaseOrderFormData) => purchasingApi.createPurchase({
       supplier_id: data.supplierId,
       warehouse_id: data.warehouseId || null,
-notes: data.notes || null,
+      notes: data.notes || null,
       items: data.items.map(item => ({
         product_id: item.productId,
+        tax_id: item.taxId ?? null,
         quantity: item.quantity,
-        unit_price: item.unitPrice
+        unit_price: item.unitPrice,
       }))
     }, accessToken!),
     onSuccess: () => {

@@ -449,6 +449,7 @@ export interface PurchaseItem {
   id: number
   purchase_id: number
   product_id: number
+  tax_id?: number | null
   quantity: number
   unit_price: string
   total_price: string
@@ -486,6 +487,7 @@ export interface PurchaseResponse {
 
 export interface CreatePurchaseItemData {
   product_id: number
+  tax_id?: number | null
   quantity: number
   unit_price: number
 }

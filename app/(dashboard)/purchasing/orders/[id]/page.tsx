@@ -13,6 +13,8 @@ import { useAuthStore } from "@/lib/store/auth"
 import { useQuery } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
+import type { PurchaseItem, Tax } from "@/lib/api/types"
+import { taxesApi } from "@/lib/api/taxes"
 
 export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -21,6 +23,12 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
   const { data: response, isLoading, isError, error } = useQuery({
     queryKey: ["purchase", resolvedParams.id],
     queryFn: () => purchasingApi.getPurchaseById(parseInt(resolvedParams.id), accessToken!),
+    enabled: !!accessToken,
+  })
+
+  const { data: taxesResponse } = useQuery({
+    queryKey: ["taxes", "all"],
+    queryFn: () => taxesApi.getAll(accessToken!, 1, 1000),
     enabled: !!accessToken,
   })
 
@@ -56,9 +64,33 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
 
   if (!order) return null
 
-  const subtotal = order.items?.reduce((sum, item) => sum + parseFloat(item.unit_price) * item.quantity, 0) || 0
-  const tax = subtotal * 0.18
-  const total = subtotal + tax
+  const taxes = taxesResponse?.data.data || []
+  const getTax = (taxId?: number | null) => taxes.find((tax) => tax.id === taxId)
+
+  const calculateItemAmounts = (item: PurchaseItem) => {
+    const baseAmount = parseFloat(item.unit_price) * item.quantity
+    const taxInfo = getTax(item.tax_id)
+    const taxPercentage = Number(taxInfo?.percentage ?? 0)
+    const taxAmount = baseAmount * (taxPercentage / 100)
+    return {
+      baseAmount,
+      taxAmount,
+      totalAmount: baseAmount + taxAmount,
+      taxName: taxInfo?.name ?? "N/A",
+      taxPercentage,
+    }
+  }
+
+  const summary = order.items?.reduce(
+    (acc, item) => {
+      const { baseAmount, taxAmount, totalAmount } = calculateItemAmounts(item)
+      acc.subtotal += baseAmount
+      acc.tax += taxAmount
+      acc.total += totalAmount
+      return acc
+    },
+    { subtotal: 0, tax: 0, total: 0 }
+  ) || { subtotal: 0, tax: 0, total: 0 }
 
   return (
     <div className="space-y-6">
@@ -141,35 +173,41 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
                 <TableHead>SKU</TableHead>
                 <TableHead className="text-right">Quantity</TableHead>
                 <TableHead className="text-right">Unit Price</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Tax</TableHead>
+                <TableHead className="text-right">Subtotal</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {order.items?.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.product?.name}</TableCell>
-                  <TableCell>{item.product?.sku}</TableCell>
-                  <TableCell className="text-right">{item.quantity}</TableCell>
-                  <TableCell className="text-right">${parseFloat(item.unit_price).toFixed(2)}</TableCell>
-                  <TableCell className="text-right">
-                    ${(item.quantity * parseFloat(item.unit_price)).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {order.items?.map((item) => {
+                const { taxAmount, totalAmount, taxName, taxPercentage } = calculateItemAmounts(item)
+
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.product?.name}</TableCell>
+                    <TableCell>{item.product?.sku}</TableCell>
+                    <TableCell className="text-right">{item.quantity}</TableCell>
+                    <TableCell className="text-right">${parseFloat(item.unit_price).toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      {taxName === "N/A" ? "N/A" : `${taxName} (${taxPercentage}%)`} - ${taxAmount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right">${totalAmount.toFixed(2)}</TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
           <div className="mt-6 space-y-2 text-right">
             <div className="flex justify-end gap-4">
               <span className="text-muted-foreground">Subtotal:</span>
-              <span className="font-medium w-24">${subtotal.toFixed(2)}</span>
+              <span className="font-medium w-24">${summary.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-end gap-4">
-              <span className="text-muted-foreground">Tax (18%):</span>
-              <span className="font-medium w-24">${tax.toFixed(2)}</span>
+              <span className="text-muted-foreground">Impuestos:</span>
+              <span className="font-medium w-24">${summary.tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-end gap-4 text-lg font-bold">
               <span>Total:</span>
-              <span className="w-24">${total.toFixed(2)}</span>
+              <span className="w-24">${summary.total.toFixed(2)}</span>
             </div>
           </div>
         </CardContent>

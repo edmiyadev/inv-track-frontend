@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useEffect, useMemo, useState } from "react"
+import { useForm, useFieldArray, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,11 +18,12 @@ interface PurchaseOrderFormProps {
   products: Product[]
   warehouses: Warehouse[]
   taxes: Tax[]
+  totalPrice?: number
   onSubmit: (data: PurchaseOrderFormData) => Promise<void>
   onCancel: () => void
 }
 
-export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxes, onSubmit, onCancel }: PurchaseOrderFormProps) {
+export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxes, totalPrice, onSubmit, onCancel }: PurchaseOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -43,13 +44,14 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
           productId: item.product_id,
           quantity: item.quantity,
           unitPrice: parseFloat(item.unit_price),
-          taxId: undefined,
+          taxId: item.tax_id ?? undefined,
+          totalPrice: parseFloat(item.total_price),
         })) || [],
         notes: order.notes || "",
       }
       : {
         orderDate: new Date().toISOString().split("T")[0],
-        items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined }],
+        items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined, totalPrice: 0 }],
       },
   })
 
@@ -58,15 +60,63 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
     name: "items",
   })
 
-  const items = watch("items")
-  const subtotal = items.reduce((sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0), 0)
-  const tax = subtotal * 0.18
-  const total = subtotal + tax
+  const items = useWatch({ control, name: "items" }) ?? []
+
+  const getTaxPercentage = (taxId?: number) => {
+    if (!taxId) return 0
+    return Number(taxes.find((tax) => tax.id === taxId)?.percentage ?? 0)
+  }
+
+  const calculateLineTotal = (item: PurchaseOrderFormData["items"][number]) => {
+    const quantity = item.quantity || 0
+    const unitPrice = item.unitPrice || 0
+    const baseAmount = quantity * unitPrice
+    const taxAmount = baseAmount * (getTaxPercentage(item.taxId) / 100)
+    return Number((baseAmount + taxAmount).toFixed(2))
+  }
+
+  const summary = useMemo(() => {
+    return items.reduce(
+      (acc, item) => {
+        const quantity = item.quantity || 0
+        const unitPrice = item.unitPrice || 0
+        const baseAmount = quantity * unitPrice
+        const taxAmount = baseAmount * (getTaxPercentage(item.taxId) / 100)
+
+        acc.subtotal += baseAmount
+        acc.tax += taxAmount
+        acc.total += baseAmount + taxAmount
+        return acc
+      },
+      { subtotal: 0, tax: 0, total: 0 }
+    )
+  }, [items, taxes])
+
+  useEffect(() => {
+    items.forEach((item, index) => {
+      const lineTotal = calculateLineTotal(item)
+
+      if ((item.totalPrice || 0) !== lineTotal) {
+        setValue(`items.${index}.totalPrice`, lineTotal, {
+          shouldDirty: false,
+          shouldValidate: true,
+        })
+      }
+    })
+  }, [items, setValue, taxes])
 
   const handleFormSubmit = async (data: PurchaseOrderFormData) => {
     setIsSubmitting(true)
     try {
-      await onSubmit(data)
+      const normalizedData: PurchaseOrderFormData = {
+        ...data,
+        items: data.items.map((item) => ({
+          ...item,
+          totalPrice: calculateLineTotal(item),
+        })),
+      }
+
+      await onSubmit(normalizedData)
     } catch (error) {
       console.error(error)
     } finally {
@@ -82,21 +132,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
           <CardDescription>Enter purchase order details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="orderDate">
-                Date <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="orderDate"
-                type="date"
-                {...register("orderDate")}
-              />
-              {errors.orderDate && <p className="text-sm text-destructive">{errors.orderDate.message}</p>}
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="supplierId">
                 Supplier <span className="text-destructive">*</span>
@@ -105,7 +141,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 value={watch("supplierId")?.toString()}
                 onValueChange={(value) => setValue("supplierId", parseInt(value))}
               >
-                <SelectTrigger disabled={!!order}>
+                <SelectTrigger className="w-full" disabled={!!order}>
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
@@ -127,7 +163,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 value={watch("warehouseId")?.toString()}
                 onValueChange={(value) => setValue("warehouseId", parseInt(value))}
               >
-                <SelectTrigger disabled={!!order}>
+                <SelectTrigger className="w-full" disabled={!!order}>
                   <SelectValue placeholder="Select warehouse" />
                 </SelectTrigger>
                 <SelectContent>
@@ -139,6 +175,18 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 </SelectContent>
               </Select>
               {errors.warehouseId && <p className="text-sm text-destructive">{errors.warehouseId.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="orderDate">
+                Date <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="orderDate"
+                type="date"
+                {...register("orderDate")}
+              />
+              {errors.orderDate && <p className="text-sm text-destructive">{errors.orderDate.message}</p>}
             </div>
           </div>
         </CardContent>
@@ -161,7 +209,8 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
         <CardContent className="space-y-4">
           {fields.map((field, index) => (
             <div key={field.id} className="flex gap-4 items-start">
-              <div className="flex-1 grid gap-4 md:grid-cols-4">
+              <div className="flex-1 grid gap-4 md:grid-cols-[2fr_0.7fr_0.9fr_1.2fr_0.9fr]">
+                
                 <div className="space-y-2">
                   <Label>Product</Label>
                   <Select
@@ -175,7 +224,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                       }
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select product" />
                     </SelectTrigger>
                     <SelectContent>
@@ -193,7 +242,11 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
 
                 <div className="space-y-2">
                   <Label>Quantity</Label>
-                  <Input type="number" {...register(`items.${index}.quantity`, { valueAsNumber: true })} min="1" />
+                  <Input
+                    type="number"
+                    {...register(`items.${index}.quantity`, { valueAsNumber: true })}
+                    min="1"
+                  />
                   {errors.items?.[index]?.quantity && (
                     <p className="text-sm text-destructive">{errors.items[index]?.quantity?.message}</p>
                   )}
@@ -218,7 +271,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                     value={watch(`items.${index}.taxId`)?.toString()}
                     onValueChange={(value) => setValue(`items.${index}.taxId`, parseInt(value))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select tax" />
                     </SelectTrigger>
                     <SelectContent>
@@ -230,10 +283,25 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-2">
+                  <Label>Subtotal</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={calculateLineTotal(items[index] ?? { productId: 0, quantity: 0, unitPrice: 0, taxId: undefined, totalPrice: 0 })}
+                    min="0"
+                    readOnly
+                  />
+                  <input type="hidden" {...register(`items.${index}.totalPrice`, { valueAsNumber: true })} />
+                  {errors.items?.[index]?.totalPrice && (
+                    <p className="text-sm text-destructive">{errors.items[index]?.totalPrice?.message}</p>
+                  )}
+                </div>
               </div>
 
               {fields.length > 1 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="mt-8">
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="mt-8 h-full">
                   ✕
                 </Button>
               )}
@@ -245,7 +313,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined })}
+            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined, totalPrice: 0 })}
             className="w-full"
           >
             + Add Item
@@ -254,15 +322,15 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal:</span>
-              <span className="font-medium">${subtotal.toFixed(2)}</span>
+              <span className="font-medium">${summary.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tax (18%):</span>
-              <span className="font-medium">${(subtotal * 0.18).toFixed(2)}</span>
+              <span className="text-muted-foreground">Impuestos</span>
+              <span className="font-medium">${summary.tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg font-semibold">
               <span>Total:</span>
-              <span>${(subtotal * 1.18).toFixed(2)}</span>
+              <span>${summary.total.toFixed(2)}</span>
             </div>
           </div>
         </CardContent>
