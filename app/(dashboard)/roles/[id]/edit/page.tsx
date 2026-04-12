@@ -19,7 +19,7 @@ export default function EditRolePage({ params }: { params: Promise<{ id: string 
 
     const role = data?.data
 
-    if (isLoading) {
+    if (isLoading || (!role && !isError)) {
         return (
             <div className="flex h-64 items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -27,10 +27,18 @@ export default function EditRolePage({ params }: { params: Promise<{ id: string 
         )
     }
 
-    if (isError || !role) {
+    if (isError) {
         return (
             <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center text-destructive">
                 Error al cargar el rol. Por favor intente recargar la página.
+            </div>
+        )
+    }
+
+    if (!role) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         )
     }

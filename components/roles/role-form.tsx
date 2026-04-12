@@ -115,9 +115,15 @@ export function RoleForm({ mode, roleId, defaultValues }: RoleFormProps) {
         await rolesApi.create(data, accessToken)
       } else {
         if (!roleId) return
-        await rolesApi.update(roleId, data, accessToken)
+        const updatedRoleResponse = await rolesApi.update(roleId, data, accessToken)
+        queryClient.setQueryData(["role", String(roleId)], updatedRoleResponse)
       }
-      await queryClient.invalidateQueries({ queryKey: ["roles"] })
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["roles"] }),
+        queryClient.invalidateQueries({ queryKey: ["role"] }),
+      ])
+
       router.push("/roles")
       router.refresh()
     } catch (error) {
