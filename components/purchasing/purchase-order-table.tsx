@@ -21,8 +21,8 @@ import { useAuthStore } from "@/lib/store/auth"
 import { Purchase } from "@/lib/api/types"
 
 const statusColors = {
-  pending: "secondary",
-  completed: "default",
+  draft: "secondary",
+  posted: "default",
   canceled: "destructive",
 } as const
 

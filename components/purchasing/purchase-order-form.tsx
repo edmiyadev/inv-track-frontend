@@ -141,7 +141,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 value={watch("supplierId")?.toString()}
                 onValueChange={(value) => setValue("supplierId", parseInt(value))}
               >
-                <SelectTrigger className="w-full" disabled={!!order}>
+                <SelectTrigger className="w-full" >
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
@@ -163,7 +163,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 value={watch("warehouseId")?.toString()}
                 onValueChange={(value) => setValue("warehouseId", parseInt(value))}
               >
-                <SelectTrigger className="w-full" disabled={!!order}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select warehouse" />
                 </SelectTrigger>
                 <SelectContent>
@@ -210,7 +210,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
           {fields.map((field, index) => (
             <div key={field.id} className="flex gap-4 items-start">
               <div className="flex-1 grid gap-4 md:grid-cols-[2fr_0.7fr_0.9fr_1.2fr_0.9fr]">
-                
+
                 <div className="space-y-2">
                   <Label>Product</Label>
                   <Select

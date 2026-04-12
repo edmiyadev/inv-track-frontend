@@ -8,6 +8,7 @@ import type {
   PurchaseResponse,
   CreatePurchaseData,
   UpdatePurchaseData,
+  PurchaseStatus,
 } from './types'
 
 export const purchasingApi = {
@@ -57,6 +58,10 @@ export const purchasingApi = {
 
   updatePurchase: async (id: number, data: UpdatePurchaseData, token: string): Promise<PurchaseResponse> => {
     return apiClient.put<PurchaseResponse>(`/purchases/${id}`, data, token)
+  },
+
+  updatePurchaseStatus: async (id: number, status: PurchaseStatus, token: string): Promise<PurchaseResponse> => {
+    return apiClient.patch<PurchaseResponse>(`/purchases/${id}/status`, { status }, token)
   },
 
   deletePurchase: async (id: number, token: string): Promise<void> => {

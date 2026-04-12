@@ -443,7 +443,7 @@ export interface CreateMovementData {
 }
 
 // Purchase Types
-export type PurchaseStatus = 'pending' | 'completed' | 'canceled'
+export type PurchaseStatus = 'draft' | 'posted' | 'canceled'
 
 export interface PurchaseItem {
   id: number
@@ -500,6 +500,8 @@ export interface CreatePurchaseData {
 }
 
 export interface UpdatePurchaseData {
+  supplier_id?: number
+  warehouse_id?: number | null
   status?: PurchaseStatus
   notes?: string | null
   items?: CreatePurchaseItemData[]

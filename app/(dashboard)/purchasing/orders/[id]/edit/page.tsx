@@ -28,8 +28,18 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
     enabled: !!accessToken,
   })
 
-  // Optimization: Removed separate calls for suppliers and warehouses
-  // We use the nested data from the purchase response
+  const { data: suppliersResponse, isLoading: isLoadingSuppliers } = useQuery({
+    queryKey: ["suppliers", "all"],
+    queryFn: () => purchasingApi.getAllSuppliers(accessToken!, 1, 1000),
+    enabled: !!accessToken,
+  })
+
+  const { data: warehousesResponse, isLoading: isLoadingWarehouses } = useQuery({
+    queryKey: ["warehouses", "all"],
+    queryFn: () => warehousesApi.getAll(accessToken!, 1, 1000),
+    enabled: !!accessToken,
+  })
+
   const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
     queryKey: ["products", "all"],
     queryFn: () => productsApi.getAll(accessToken!, 1, 1000),
@@ -44,6 +54,8 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
 
   const mutation = useMutation({
     mutationFn: (data: PurchaseOrderFormData) => purchasingApi.updatePurchase(parseInt(resolvedParams.id), {
+      supplier_id: data.supplierId,
+      warehouse_id: data.warehouseId || null,
       notes: data.notes || null,
       items: data.items.map(item => ({
         product_id: item.productId,
@@ -71,7 +83,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
     router.push("/purchasing")
   }
 
-  if (isLoadingOrder || isLoadingProducts || isLoadingTaxes) {
+  if (isLoadingOrder || isLoadingSuppliers || isLoadingWarehouses || isLoadingProducts || isLoadingTaxes) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
@@ -99,6 +111,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
   }
 
   const order = orderResponse?.data
+  const isEditable = order?.status === "draft"
 
   return (
     <div className="space-y-6">
@@ -108,17 +121,29 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
+      {order && !isEditable && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Esta factura está en estado <strong>{order.status}</strong> y no se puede editar.
+          </AlertDescription>
+        </Alert>
+      )}
       {order && (
-        <PurchaseOrderForm
-          order={order}
-          // Use the nested supplier/warehouse from the order, or empty array if not present
-          suppliers={order?.supplier ? [order.supplier] : []}
-          products={productsResponse?.data.data || []}
-          warehouses={order?.warehouse ? [order.warehouse] : []}
-          taxes={taxesResponse?.data.data || []}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-        />
+        isEditable ? (
+          <PurchaseOrderForm
+            order={order}
+            suppliers={suppliersResponse?.data.data || []}
+            products={productsResponse?.data.data || []}
+            warehouses={warehousesResponse?.data.data || []}
+            taxes={taxesResponse?.data.data || []}
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+          />
+        ) : (
+          <Button asChild variant="outline">
+            <Link href={`/purchasing/orders/${resolvedParams.id}`}>Volver al detalle</Link>
+          </Button>
+        )
       )}
     </div>
   )

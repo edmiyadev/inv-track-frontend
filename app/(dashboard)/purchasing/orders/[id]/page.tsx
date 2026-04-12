@@ -10,7 +10,7 @@ import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { purchasingApi } from "@/lib/api/purchasing"
 import { useAuthStore } from "@/lib/store/auth"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import type { PurchaseItem, Tax } from "@/lib/api/types"
@@ -32,9 +32,11 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
   const resolvedParams = use(params)
   const { accessToken } = useAuthStore()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [statusError, setStatusError] = useState<string | null>(null)
   const router = useRouter()
+  const queryClient = useQueryClient()
 
-  
+
   const { data: response, isLoading, isError, error } = useQuery({
     queryKey: ["purchase", resolvedParams.id],
     queryFn: () => purchasingApi.getPurchaseById(parseInt(resolvedParams.id), accessToken!),
@@ -45,6 +47,19 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
     queryKey: ["taxes", "all"],
     queryFn: () => taxesApi.getAll(accessToken!, 1, 1000),
     enabled: !!accessToken,
+  })
+
+  const updateStatusMutation = useMutation({
+    mutationFn: (status: "draft" | "posted" | "canceled") =>
+      purchasingApi.updatePurchaseStatus(parseInt(resolvedParams.id), status, accessToken!),
+    onSuccess: () => {
+      setStatusError(null)
+      queryClient.invalidateQueries({ queryKey: ["purchase", resolvedParams.id] })
+      queryClient.invalidateQueries({ queryKey: ["purchases"] })
+    },
+    onError: (err: Error) => {
+      setStatusError(err.message || "Error al cambiar estado")
+    },
   })
 
   const handleDelete = async () => {
@@ -96,6 +111,9 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
 
   if (!order) return null
 
+  const isDraft = order.status === "draft"
+  const isCanceled = order.status === "canceled"
+
   const taxes = taxesResponse?.data.data || []
   const getTax = (taxId?: number | null) => taxes.find((tax) => tax.id === taxId)
 
@@ -137,39 +155,65 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
                 Volver
               </Link>
             </Button>
-            <Button asChild>
-              <Link href={`/purchasing/orders/${resolvedParams.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </Link>
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Eliminar
+            {isDraft && (
+              <>
+                <Button
+                  onClick={() => updateStatusMutation.mutate("posted")}
+                  disabled={updateStatusMutation.isPending}
+                >
+                  {updateStatusMutation.isPending ? "Posteando..." : "Postear factura"}
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta acción no se puede deshacer. Esto eliminará permanentemente el pedido
-                    <strong> {order.id}</strong> del sistema.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? 'Eliminando...' : 'Eliminar'}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                <Button
+                  variant="outline"
+                  onClick={() => updateStatusMutation.mutate("canceled")}
+                  disabled={updateStatusMutation.isPending}
+                >
+                  Cancelar factura
+                </Button>
+                <Button asChild>
+                  <Link href={`/purchasing/orders/${resolvedParams.id}/edit`}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente el pedido
+                        <strong> {order.id}</strong> del sistema.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            )}
+            {isCanceled && (
+              <Button
+                variant="outline"
+                onClick={() => updateStatusMutation.mutate("draft")}
+                disabled={updateStatusMutation.isPending}
+              >
+                {updateStatusMutation.isPending ? "Restaurando..." : "Volver a borrador"}
+              </Button>
+            )}
             {/* <Button variant="outline">
               <FileText className="mr-2 h-4 w-4" />
               Generate Invoice
@@ -177,6 +221,12 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
           </div>
         }
       />
+
+      {statusError && (
+        <Alert variant="destructive">
+          <AlertDescription>{statusError}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -186,7 +236,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
           <CardContent className="space-y-4">
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Status</span>
-              <Badge variant={order.status === "completed" ? "default" : "secondary"}>
+              <Badge variant={order.status === "posted" ? "default" : order.status === "canceled" ? "destructive" : "secondary"}>
                 {order.status}
               </Badge>
             </div>
