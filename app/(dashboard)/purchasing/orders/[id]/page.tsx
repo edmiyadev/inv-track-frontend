@@ -56,6 +56,8 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
       setStatusError(null)
       queryClient.invalidateQueries({ queryKey: ["purchase", resolvedParams.id] })
       queryClient.invalidateQueries({ queryKey: ["purchases"] })
+      queryClient.invalidateQueries({ queryKey: ["stocks"] })
+      queryClient.invalidateQueries({ queryKey: ["movements"] })
     },
     onError: (err: Error) => {
       setStatusError(err.message || "Error al cambiar estado")

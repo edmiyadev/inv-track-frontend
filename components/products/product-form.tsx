@@ -18,7 +18,7 @@ import { categoriesApi } from "@/lib/api/categories"
 import { taxesApi } from "@/lib/api/taxes"
 import type { Product, Tax } from "@/lib/api/types"
 import Link from "next/link"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 // Validation schema matching API structure
 const productFormSchema = z.object({
@@ -59,6 +59,7 @@ interface ProductFormProps {
 
 export function ProductForm({ mode, defaultValues, productId }: ProductFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const router = useRouter()
 
@@ -123,9 +124,12 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
 
       if (mode === "create") {
         await productsApi.create(productData, accessToken)
+        await queryClient.invalidateQueries({ queryKey: ["products"] })
         router.push('/products')
       } else if (productId) {
         await productsApi.update(productId, productData, accessToken)
+        await queryClient.invalidateQueries({ queryKey: ["products"] })
+        await queryClient.invalidateQueries({ queryKey: ["product", productId] })
         router.push(`/products/${productId}`)
       }
     } catch (error) {

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -31,6 +32,7 @@ interface WarehouseFormProps {
 
 export function WarehouseForm({ warehouse, warehouseId }: WarehouseFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const isEditing = !!warehouseId
 
@@ -59,6 +61,7 @@ export function WarehouseForm({ warehouse, warehouseId }: WarehouseFormProps) {
         await warehousesApi.create(data, accessToken)
         toast.success("Almacén creado correctamente")
       }
+      await queryClient.invalidateQueries({ queryKey: ["warehouses"] })
       router.push("/warehouses")
       router.refresh()
     } catch (error) {

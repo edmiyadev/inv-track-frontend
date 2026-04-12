@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import * as z from "zod"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/lib/store/auth"
 import { customersApi } from "@/lib/api/customers"
 import type { Customer } from "@/lib/api/types"
@@ -32,6 +33,7 @@ interface CustomerFormProps {
 
 export function CustomerForm({ customer, customerId }: CustomerFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const isEditing = !!customerId
 
@@ -92,6 +94,7 @@ export function CustomerForm({ customer, customerId }: CustomerFormProps) {
         await customersApi.create(data, accessToken)
         alert("Cliente creado exitosamente")
       }
+      await queryClient.invalidateQueries({ queryKey: ["customers"] })
       router.push("/customers")
       router.refresh()
     } catch (error) {

@@ -82,6 +82,7 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stocks"] })
+      queryClient.invalidateQueries({ queryKey: ["movements"] })
       onSuccess?.()
     },
     onError: (err: any) => {

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -36,6 +37,7 @@ interface SupplierFormProps {
 
 export function SupplierForm({ supplier, supplierId }: SupplierFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const isEditing = !!supplierId
 
@@ -104,6 +106,7 @@ export function SupplierForm({ supplier, supplierId }: SupplierFormProps) {
         await suppliersApi.create(data, accessToken)
         alert("Proveedor creado exitosamente")
       }
+      await queryClient.invalidateQueries({ queryKey: ["suppliers"] })
       router.push("/suppliers")
       router.refresh()
     } catch (error) {

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -31,6 +32,7 @@ interface TaxFormProps {
 
 export function TaxForm({ tax, taxId }: TaxFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const isEditing = !!taxId
 
@@ -93,6 +95,7 @@ export function TaxForm({ tax, taxId }: TaxFormProps) {
         await taxesApi.create(data, accessToken)
         alert("Impuesto creado exitosamente")
       }
+      await queryClient.invalidateQueries({ queryKey: ["taxes"] })
       router.push("/taxes")
       router.refresh()
     } catch (error) {

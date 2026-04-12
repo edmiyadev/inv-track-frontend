@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,6 +32,7 @@ interface RoleFormProps {
 
 export function RoleForm({ mode, roleId, defaultValues }: RoleFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -116,6 +117,7 @@ export function RoleForm({ mode, roleId, defaultValues }: RoleFormProps) {
         if (!roleId) return
         await rolesApi.update(roleId, data, accessToken)
       }
+      await queryClient.invalidateQueries({ queryKey: ["roles"] })
       router.push("/roles")
       router.refresh()
     } catch (error) {

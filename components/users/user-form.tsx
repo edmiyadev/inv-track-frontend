@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,6 +26,7 @@ interface UserFormProps {
 
 export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -96,6 +97,7 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
 
       await usersApi.updateRoles(createdOrUpdatedUserId, roleNames, accessToken)
 
+      await queryClient.invalidateQueries({ queryKey: ["users"] })
       router.push("/users")
       router.refresh()
     } catch (error) {
@@ -289,4 +291,3 @@ export function UserForm({ mode, userId, defaultValues }: UserFormProps) {
     </form>
   )
 }
-
