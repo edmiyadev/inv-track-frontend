@@ -49,12 +49,13 @@ function parsePermission(
   const subjectMap: Record<string, Subjects> = {
     dashboard: "Dashboard",
     products: "Product",
+    product_categories: "Category",
     categories: "Category",
     suppliers: "Supplier",
     users: "User",
     roles: "Role",
     settings: "Settings",
-    purchasing: "Purchase",
+    purchases: "Purchase",
     sales: "Sale",
     inventory: "Inventory",
     warehouses: "Warehouse",
@@ -66,15 +67,20 @@ function parsePermission(
   // Mapear acción de Laravel a acción CASL
   const actionMap: Record<string, Actions> = {
     view: "view",
+    viewAny: "view",
+    view_any: "view",
     create: "create",
     edit: "edit",
-    update: "edit", // Alias para edit
+    update: "edit",
     delete: "delete",
+    syncRoles: "syncRoles",
+    sync_roles: "syncRoles",
     manage: "manage",
   };
+  const subject = subjectMap[resource];
+  const mappedAction = actionMap[action];
 
-  const subject = subjectMap[resource] || (resource as Subjects);
-  const mappedAction = actionMap[action] || (action as Actions);
+  if (!subject || !mappedAction) return null;
 
   return { action: mappedAction, subject };
 }
