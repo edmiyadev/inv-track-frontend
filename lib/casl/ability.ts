@@ -13,6 +13,7 @@ export type Subjects =
   | "Dashboard"
   | "Purchase"
   | "Sale"
+  | "Customer"
   | "Inventory"
   | "Product"
   | "Category"
@@ -57,6 +58,8 @@ function parsePermission(
     settings: "Settings",
     purchases: "Purchase",
     sales: "Sale",
+    customer: "Customer",
+    customers: "Customer",
     inventory: "Inventory",
     warehouses: "Warehouse",
     inventory_stocks: "InventoryStock",
@@ -67,8 +70,8 @@ function parsePermission(
   // Mapear acción de Laravel a acción CASL
   const actionMap: Record<string, Actions> = {
     view: "view",
-    viewAny: "view",
-    view_any: "view",
+    viewAny: "viewAny",
+    view_any: "viewAny",
     create: "create",
     edit: "edit",
     update: "edit",

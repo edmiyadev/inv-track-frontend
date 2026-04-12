@@ -46,5 +46,8 @@ export function CanAccess({ action, subject, children, fallback = null }: CanAcc
  */
 export function usePermission(action: Actions, subject: Subjects): boolean {
   const ability = useAbility()
+  if (action === 'view') {
+    return ability.can('view', subject) || ability.can('viewAny', subject)
+  }
   return ability.can(action, subject)
 }

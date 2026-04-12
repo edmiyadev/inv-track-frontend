@@ -58,7 +58,7 @@ const navigationGroups = [
     icon: ShoppingCart,
     isCollapsible: true,
     items: [
-      { name: "Clientes", href: "/customers", icon: User, permission: "Sale" as const },
+      { name: "Clientes", href: "/customers", icon: User, permission: "Customer" as const },
       { name: "Ventas", href: "/sales", icon: DollarSign, permission: "Sale" as const },
     ],
   },

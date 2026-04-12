@@ -36,7 +36,7 @@ export function useFilteredNavigation(groups: NavigationGroup[]): NavigationGrou
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => 
-        ability.can('view', item.permission)
+        ability.can('view', item.permission) || ability.can('viewAny', item.permission)
       ),
     }))
     .filter((group) => group.items.length > 0) // Eliminar grupos vacíos
