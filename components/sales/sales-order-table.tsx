@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MoreHorizontal, Eye, Pencil, Trash2, Truck } from "lucide-react"
+import { MoreHorizontal, Eye, Pencil, Trash2, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,80 +15,43 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import type { SalesOrder } from "@/types"
-
-const mockSalesOrders: SalesOrder[] = [
-  {
-    id: "1",
-    soNumber: "SO-2024-001",
-    customerId: "1",
-    customerName: "Acme Corporation",
-    orderDate: new Date("2024-03-16"),
-    expectedDeliveryDate: new Date("2024-03-23"),
-    status: "confirmed",
-    items: [],
-    subtotal: 12000,
-    tax: 1200,
-    discount: 500,
-    total: 12700,
-    createdBy: "Admin User",
-    createdAt: new Date("2024-03-16"),
-    updatedAt: new Date("2024-03-16"),
-  },
-  {
-    id: "2",
-    soNumber: "SO-2024-002",
-    customerId: "2",
-    customerName: "Tech Solutions Inc.",
-    orderDate: new Date("2024-03-19"),
-    expectedDeliveryDate: new Date("2024-03-26"),
-    status: "processing",
-    items: [],
-    subtotal: 8500,
-    tax: 850,
-    discount: 0,
-    total: 9350,
-    createdBy: "Sales Manager",
-    createdAt: new Date("2024-03-19"),
-    updatedAt: new Date("2024-03-20"),
-  },
-  {
-    id: "3",
-    soNumber: "SO-2024-003",
-    customerId: "1",
-    customerName: "Acme Corporation",
-    orderDate: new Date("2024-03-21"),
-    expectedDeliveryDate: new Date("2024-03-28"),
-    status: "shipped",
-    items: [],
-    subtotal: 15500,
-    tax: 1550,
-    discount: 1000,
-    total: 16050,
-    createdBy: "Admin User",
-    createdAt: new Date("2024-03-21"),
-    updatedAt: new Date("2024-03-25"),
-  },
-]
+import { useQuery } from "@tanstack/react-query"
+import { salesApi } from "@/lib/api/sales"
+import { useAuthStore } from "@/lib/store/auth"
+import type { Sale } from "@/lib/api/types"
 
 const statusColors = {
   draft: "secondary",
-  confirmed: "default",
-  processing: "default",
-  shipped: "default",
-  delivered: "default",
-  cancelled: "secondary",
+  posted: "default",
+  canceled: "destructive",
 } as const
 
 export function SalesOrderTable() {
+  const { accessToken } = useAuthStore()
   const [searchQuery, setSearchQuery] = useState("")
-  const [orders] = useState<SalesOrder[]>(mockSalesOrders)
+
+  const { data: ordersResponse, isLoading } = useQuery({
+    queryKey: ["sales"],
+    queryFn: () => salesApi.getAllSales(accessToken!, 1, 50),
+    enabled: !!accessToken,
+  })
+
+  const responseData = ordersResponse as any
+  const orders: Sale[] = responseData?.data?.data || responseData?.data || []
 
   const filteredOrders = orders.filter(
     (order) =>
-      order.soNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchQuery.toLowerCase()),
+      (order.customer?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.id.toString().includes(searchQuery),
   )
+
+  if (isLoading) {
+    return (
+      <div className="flex h-48 items-center justify-center rounded-lg border border-border bg-card">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -108,7 +71,6 @@ export function SalesOrderTable() {
               <TableHead>SO Number</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Order Date</TableHead>
-              <TableHead>Expected Delivery</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[70px]"></TableHead>
@@ -117,20 +79,21 @@ export function SalesOrderTable() {
           <TableBody>
             {filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   No sales orders found.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map((order) => (
+              filteredOrders.map((order: Sale) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.soNumber}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell>{order.orderDate.toLocaleDateString()}</TableCell>
-                  <TableCell>{order.expectedDeliveryDate.toLocaleDateString()}</TableCell>
-                  <TableCell className="font-medium">${order.total.toLocaleString()}</TableCell>
+                  <TableCell className="font-medium">SO-{order.id.toString().padStart(6, '0')}</TableCell>
+                  <TableCell>{order.customer?.name || "Unknown Customer"}</TableCell>
+                  <TableCell>{new Date(order.date || order.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell className="font-medium">${parseFloat(order.total_amount).toFixed(2)}</TableCell>
                   <TableCell>
-                    <Badge variant={statusColors[order.status]}>{order.status}</Badge>
+                    <Badge variant={statusColors[order.status as keyof typeof statusColors] || "default"}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -148,18 +111,21 @@ export function SalesOrderTable() {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Truck className="mr-2 h-4 w-4" />
-                          Create Shipment
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Cancel Order
-                        </DropdownMenuItem>
+                        {order.status === 'draft' && (
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/sales/orders/${order.id}/edit`}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

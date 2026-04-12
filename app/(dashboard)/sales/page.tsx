@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
-import { SalesInvoiceTable } from "@/components/sales/sales-invoice-table"
+import { SalesOrderTable } from "@/components/sales/sales-order-table"
 
 export default function SalesPage() {
   return (
@@ -24,7 +24,7 @@ export default function SalesPage() {
       />
 
 
-      <SalesInvoiceTable />
+      <SalesOrderTable />
     </div>
   )
 }

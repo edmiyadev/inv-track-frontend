@@ -507,6 +507,77 @@ export interface UpdatePurchaseData {
   items?: CreatePurchaseItemData[]
 }
 
+// Sale Types
+export type SaleStatus = 'draft' | 'posted' | 'canceled'
+
+export interface SaleItem {
+  id: number
+  sale_id: number
+  product_id: number
+  tax_id?: number | null
+  quantity: number
+  unit_price: string
+  tax_percentage: string
+  tax_amount: string
+  subtotal: string
+  created_at: string
+  updated_at: string
+  product?: Product
+  tax?: Tax
+}
+
+export interface Sale {
+  id: number
+  customer_id: number
+  warehouse_id: number
+  status: SaleStatus
+  total_amount: string
+  date: string
+  notes: string | null
+  created_at: string
+  updated_at: string
+  customer?: Customer
+  warehouse?: Warehouse
+  items?: SaleItem[]
+}
+
+export interface SalesResponse {
+  status: string
+  message: string
+  data: PaginatedData<Sale>
+}
+
+export interface SaleResponse {
+  status: string
+  message: string
+  data: Sale
+}
+
+export interface CreateSaleItemData {
+  product_id: number
+  tax_id?: number | null
+  tax_percentage?: number
+  quantity: number
+  unit_price?: number
+}
+
+export interface CreateSaleData {
+  customer_id: number
+  warehouse_id: number
+  notes?: string | null
+  date?: string | null
+  items: CreateSaleItemData[]
+}
+
+export interface UpdateSaleData {
+  customer_id?: number
+  warehouse_id?: number
+  status?: SaleStatus
+  notes?: string | null
+  date?: string | null
+  items?: CreateSaleItemData[]
+}
+
 // Tax Types
 export interface Tax {
   id: number

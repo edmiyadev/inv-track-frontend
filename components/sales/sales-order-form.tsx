@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useMemo, useState } from "react"
+import { useForm, useFieldArray, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,19 +9,20 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Trash2 } from "lucide-react"
 import { salesOrderFormSchema, type SalesOrderFormData } from "@/lib/validations"
-import type { SalesOrder, Customer, Product } from "@/types"
+import type { Sale, Customer, Product, Warehouse, Tax } from "@/lib/api/types"
 
 interface SalesOrderFormProps {
-  order?: SalesOrder
+  order?: Sale
   customers: Customer[]
   products: Product[]
-  onSubmit: (data: SalesOrderFormData) => void
+  warehouses: Warehouse[]
+  taxes: Tax[]
+  onSubmit: (data: SalesOrderFormData) => Promise<void>
   onCancel: () => void
 }
 
-export function SalesOrderForm({ order, customers, products, onSubmit, onCancel }: SalesOrderFormProps) {
+export function SalesOrderForm({ order, customers, products, warehouses, taxes, onSubmit, onCancel }: SalesOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const {
@@ -35,22 +36,20 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
     resolver: zodResolver(salesOrderFormSchema),
     defaultValues: order
       ? {
-          customerId: order.customerId,
-          orderDate: order.orderDate,
-          expectedDeliveryDate: order.expectedDeliveryDate,
-          items: order.items.map((item) => ({
-            productId: item.productId,
+          customerId: order.customer_id,
+          warehouseId: order.warehouse_id,
+          orderDate: new Date(order.date).toISOString().split("T")[0],
+          items: order.items?.map((item) => ({
+            productId: item.product_id,
             quantity: item.quantity,
-            unitPrice: item.unitPrice,
-          })),
-          discount: order.discount,
-          notes: order.notes,
+            unitPrice: parseFloat(item.unit_price),
+            taxId: item.tax_id ?? undefined,
+          })) || [],
+          notes: order.notes || "",
         }
       : {
-          orderDate: new Date(),
-          expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          items: [{ productId: "", quantity: 1, unitPrice: 0 }],
-          discount: 0,
+          orderDate: new Date().toISOString().split("T")[0],
+          items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined }],
         },
   })
 
@@ -59,11 +58,37 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
     name: "items",
   })
 
-  const items = watch("items")
-  const discount = watch("discount") || 0
-  const subtotal = items.reduce((sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0), 0)
-  const tax = subtotal * 0.1
-  const total = subtotal + tax - discount
+  const items = useWatch({ control, name: "items" }) ?? []
+
+  const getTaxPercentage = (taxId?: number) => {
+    if (!taxId) return 0
+    return Number(taxes.find((tax) => tax.id === taxId)?.percentage ?? 0)
+  }
+
+  const calculateLineTotal = (item: SalesOrderFormData["items"][number]) => {
+    const quantity = item.quantity || 0
+    const unitPrice = item.unitPrice || 0
+    const baseAmount = quantity * unitPrice
+    const taxAmount = baseAmount * (getTaxPercentage(item.taxId) / 100)
+    return Number((baseAmount + taxAmount).toFixed(2))
+  }
+
+  const summary = useMemo(() => {
+    return items.reduce(
+      (acc, item) => {
+        const quantity = item.quantity || 0
+        const unitPrice = item.unitPrice || 0
+        const baseAmount = quantity * unitPrice
+        const taxAmount = baseAmount * (getTaxPercentage(item.taxId) / 100)
+
+        acc.subtotal += baseAmount
+        acc.tax += taxAmount
+        acc.total += baseAmount + taxAmount
+        return acc
+      },
+      { subtotal: 0, tax: 0, total: 0 }
+    )
+  }, [items, taxes])
 
   const handleFormSubmit = async (data: SalesOrderFormData) => {
     setIsSubmitting(true)
@@ -87,13 +112,16 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
               <Label htmlFor="customerId">
                 Customer <span className="text-destructive">*</span>
               </Label>
-              <Select value={watch("customerId")} onValueChange={(value) => setValue("customerId", value)}>
+              <Select
+                value={watch("customerId")?.toString()}
+                onValueChange={(value) => setValue("customerId", parseInt(value))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select customer" />
                 </SelectTrigger>
                 <SelectContent>
                   {customers.map((customer) => (
-                    <SelectItem key={customer.id} value={customer.id}>
+                    <SelectItem key={customer.id} value={customer.id.toString()}>
                       {customer.name}
                     </SelectItem>
                   ))}
@@ -103,27 +131,44 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="orderDate">
-                Order Date <span className="text-destructive">*</span>
+              <Label htmlFor="warehouseId">
+                Warehouse <span className="text-destructive">*</span>
               </Label>
-              <Input id="orderDate" type="date" {...register("orderDate", { valueAsDate: true })} />
-              {errors.orderDate && <p className="text-sm text-destructive">{errors.orderDate.message}</p>}
+              <Select
+                value={watch("warehouseId")?.toString()}
+                onValueChange={(value) => setValue("warehouseId", parseInt(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select warehouse" />
+                </SelectTrigger>
+                <SelectContent>
+                  {warehouses.map((warehouse) => (
+                    <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                      {warehouse.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.warehouseId && <p className="text-sm text-destructive">{errors.warehouseId.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="expectedDeliveryDate">
-                Expected Delivery <span className="text-destructive">*</span>
+              <Label htmlFor="orderDate">
+                Date <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="expectedDeliveryDate"
-                type="date"
-                {...register("expectedDeliveryDate", { valueAsDate: true })}
-              />
-              {errors.expectedDeliveryDate && (
-                <p className="text-sm text-destructive">{errors.expectedDeliveryDate.message}</p>
-              )}
+              <Input id="orderDate" type="date" {...register("orderDate")} />
+              {errors.orderDate && <p className="text-sm text-destructive">{errors.orderDate.message}</p>}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Additional Notes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea {...register("notes")} placeholder="Enter any additional notes or instructions" rows={4} />
         </CardContent>
       </Card>
 
@@ -135,16 +180,17 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
         <CardContent className="space-y-4">
           {fields.map((field, index) => (
             <div key={field.id} className="flex gap-4 items-start">
-              <div className="flex-1 grid gap-4 md:grid-cols-3">
+              <div className="flex-1 grid gap-4 md:grid-cols-[2fr_0.7fr_0.9fr_1.2fr_0.9fr]">
                 <div className="space-y-2">
                   <Label>Product</Label>
                   <Select
-                    value={watch(`items.${index}.productId`)}
+                    value={watch(`items.${index}.productId`)?.toString()}
                     onValueChange={(value) => {
-                      setValue(`items.${index}.productId`, value)
-                      const product = products.find((p) => p.id === value)
+                      const productId = parseInt(value)
+                      setValue(`items.${index}.productId`, productId)
+                      const product = products.find((p) => p.id === productId)
                       if (product) {
-                        setValue(`items.${index}.unitPrice`, product.price)
+                        setValue(`items.${index}.unitPrice`, parseFloat(product.price))
                       }
                     }}
                   >
@@ -153,7 +199,7 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
                     </SelectTrigger>
                     <SelectContent>
                       {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
+                        <SelectItem key={product.id} value={product.id.toString()}>
                           {product.name} ({product.sku})
                         </SelectItem>
                       ))}
@@ -175,11 +221,41 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
                     min="0"
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label>Tax</Label>
+                  <Select
+                    value={watch(`items.${index}.taxId`)?.toString()}
+                    onValueChange={(value) => setValue(`items.${index}.taxId`, parseInt(value))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tax" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {taxes.map((tax) => (
+                        <SelectItem key={tax.id} value={tax.id.toString()}>
+                          {tax.name} ({tax.percentage}%)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Subtotal</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={calculateLineTotal(items[index] ?? { productId: 0, quantity: 0, unitPrice: 0, taxId: undefined })}
+                    min="0"
+                    readOnly
+                  />
+                </div>
               </div>
 
               {fields.length > 1 && (
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="mt-8">
-                  <Trash2 className="h-4 w-4" />
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="mt-8 h-full">
+                  ✕
                 </Button>
               )}
             </div>
@@ -190,46 +266,26 @@ export function SalesOrderForm({ order, customers, products, onSubmit, onCancel 
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ productId: "", quantity: 1, unitPrice: 0 })}
+            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined })}
             className="w-full"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Item
+            + Add Item
           </Button>
 
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal:</span>
-              <span className="font-medium">${subtotal.toFixed(2)}</span>
+              <span className="font-medium">${summary.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Tax (10%):</span>
-              <span className="font-medium">${tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Discount:</span>
-              <Input
-                type="number"
-                step="0.01"
-                {...register("discount", { valueAsNumber: true })}
-                className="w-32 h-8"
-                min="0"
-              />
+              <span className="text-muted-foreground">Impuestos:</span>
+              <span className="font-medium">${summary.tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg font-semibold">
               <span>Total:</span>
-              <span>${total.toFixed(2)}</span>
+              <span>${summary.total.toFixed(2)}</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Additional Notes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Textarea {...register("notes")} placeholder="Enter any additional notes or instructions" rows={4} />
         </CardContent>
       </Card>
 

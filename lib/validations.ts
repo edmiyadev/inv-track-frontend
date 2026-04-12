@@ -199,19 +199,19 @@ export type CustomerFormData = z.infer<typeof customerFormSchema>
 
 // Sales Order Form Validation Schema
 export const salesOrderFormSchema = z.object({
-  customerId: z.string().min(1, "Please select a customer"),
-  orderDate: z.date(),
-  expectedDeliveryDate: z.date(),
+  customerId: z.coerce.number().min(1, "Please select a customer"),
+  warehouseId: z.coerce.number().min(1, "Please select a warehouse"),
+  orderDate: z.string().min(1, "Please select a date"),
   items: z
     .array(
       z.object({
-        productId: z.string().min(1, "Please select a product"),
+        productId: z.coerce.number().min(1, "Please select a product"),
         quantity: z.coerce.number().int().min(1, "Quantity must be at least 1"),
         unitPrice: z.coerce.number().min(0.01, "Unit price must be greater than 0"),
+        taxId: z.coerce.number().optional(),
       }),
     )
     .min(1, "Please add at least one item"),
-  discount: z.coerce.number().min(0, "Discount cannot be negative").optional(),
   notes: z.string().max(500, "Notes are too long").optional(),
 })
 
