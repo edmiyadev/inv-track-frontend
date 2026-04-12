@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { useQuery } from "@tanstack/react-query"
 import { purchasingApi } from "@/lib/api/purchasing"
 import { useAuthStore } from "@/lib/store/auth"
-import { Purchase } from "@/lib/api/types"
+import type { Purchase } from "@/lib/api/types"
 
 const statusColors = {
   draft: "secondary",
@@ -36,10 +36,7 @@ export function PurchaseOrderTable() {
     enabled: !!accessToken,
   })
 
-  // Handle both paginated (data.data) and simple array (data) responses
-  // Cast to any to avoid strict type checks blocking the fallback
-  const responseData = ordersResponse as any
-  const orders = responseData?.data?.data || responseData?.data || []
+  const orders: Purchase[] = ordersResponse?.data.data ?? []
 
   const filteredOrders = orders.filter(
     (order) =>

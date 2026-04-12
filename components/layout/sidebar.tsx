@@ -59,7 +59,7 @@ const navigationGroups = [
     icon: ShoppingCart,
     isCollapsible: true, // Siempre renderizar como grupo colapsable
     items: [
-      { name: "Clientes", href: "/customers", icon: User, permission: "Customer" as const },
+      { name: "Clientes", href: "/customers", icon: User, permission: "Sale" as const },
       { name: "Ventas", href: "/sales", icon: DollarSign, permission: "Sale" as const },
     ],
   },

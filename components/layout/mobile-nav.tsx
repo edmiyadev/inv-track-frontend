@@ -58,7 +58,7 @@ const navigationGroups = [
     icon: ShoppingCart,
     isCollapsible: true,
     items: [
-      { name: "Clientes", href: "/customers", icon: User, permission: "Customer" as const },
+      { name: "Clientes", href: "/customers", icon: User, permission: "Sale" as const },
       { name: "Ventas", href: "/sales", icon: DollarSign, permission: "Sale" as const },
     ],
   },
@@ -77,8 +77,8 @@ const navigationGroups = [
     icon: Warehouse,
     isCollapsible: true,
     items: [
-      { name: "Stock", href: "/inventory", icon: Warehouse, permission: "Inventory" as const },
-      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "Inventory" as const },
+      { name: "Stock", href: "/inventory", icon: Warehouse, permission: "InventoryStock" as const },
+      { name: "Movimientos", href: "/inventory/history", icon: ArrowRightLeft, permission: "InventoryMovement" as const },
     ],
   },
   {
