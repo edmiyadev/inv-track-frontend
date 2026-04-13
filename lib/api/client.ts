@@ -7,12 +7,16 @@ interface RequestOptions extends RequestInit {
 export class ApiError extends Error {
   status: number
   statusText: string
+  code?: string
+  details?: unknown
 
-  constructor(message: string, status: number, statusText: string) {
+  constructor(message: string, status: number, statusText: string, code?: string, details?: unknown) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.statusText = statusText
+    this.code = code
+    this.details = details
   }
 }
 
@@ -42,13 +46,20 @@ class ApiClient {
     const response = await fetch(`${this.baseURL}${endpoint}`, config)
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({
+      const errorData: unknown = await response.json().catch(() => ({
         message: response.statusText,
       }))
+
+      const errorPayload = typeof errorData === 'object' && errorData !== null
+        ? (errorData as Record<string, unknown>)
+        : {}
+
       throw new ApiError(
-        errorData.message || 'API request failed',
+        typeof errorPayload.message === 'string' ? errorPayload.message : 'API request failed',
         response.status,
-        response.statusText
+        response.statusText,
+        typeof errorPayload.code === 'string' ? errorPayload.code : undefined,
+        errorPayload.errors
       )
     }
 

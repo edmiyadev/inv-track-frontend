@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import type { SaleItem } from "@/lib/api/types"
 import { parseApiDateToLocalDate } from "@/lib/utils"
+import { ApiError } from "@/lib/api/client"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,44 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
+
+interface StockInsufficientItem {
+  product_name?: string
+  available?: number
+  requested?: number
+  missing?: number
+}
+
+const formatStockInsufficientMessage = (error: ApiError): string => {
+  if (error.code !== "STOCK_INSUFFICIENT") {
+    return error.message || "Error al cambiar estado"
+  }
+
+  const details = error.details
+  const items = (
+    details &&
+    typeof details === "object" &&
+    "items" in details &&
+    Array.isArray((details as { items?: unknown[] }).items)
+      ? (details as { items: unknown[] }).items
+      : []
+  )
+    .filter((item): item is StockInsufficientItem => typeof item === "object" && item !== null)
+
+  if (items.length === 0) {
+    return error.message || "No hay stock suficiente para completar la operación"
+  }
+
+  const lines = items.map((item) => {
+    const productName = item.product_name ?? "Producto"
+    const requested = typeof item.requested === "number" ? item.requested : 0
+    const available = typeof item.available === "number" ? item.available : 0
+    const missing = typeof item.missing === "number" ? item.missing : Math.max(requested - available, 0)
+    return `${productName}: faltan ${missing} (solicitado: ${requested}, disponible: ${available})`
+  })
+
+  return `No hay stock suficiente para postear la venta. ${lines.join(" | ")}`
+}
 
 export default function SalesOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -53,6 +92,10 @@ export default function SalesOrderDetailPage({ params }: { params: Promise<{ id:
       queryClient.invalidateQueries({ queryKey: ["movements"] })
     },
     onError: (err: Error) => {
+      if (err instanceof ApiError) {
+        setStatusError(formatStockInsufficientMessage(err))
+        return
+      }
       setStatusError(err.message || "Error al cambiar estado")
     },
   })
