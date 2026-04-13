@@ -56,13 +56,13 @@ export function SalesOrderForm({ order, customers, products, warehouses, taxes, 
             productId: item.product_id,
             quantity: item.quantity,
             unitPrice: parseFloat(item.unit_price),
-            taxId: item.tax_id ?? undefined,
+            taxId: item.tax_id ?? 0,
           })) || [],
           notes: order.notes || "",
         }
       : {
           orderDate: getTodayDate(),
-          items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined }],
+          items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: 0 }],
         },
   })
 
@@ -238,8 +238,8 @@ export function SalesOrderForm({ order, customers, products, warehouses, taxes, 
                 <div className="space-y-2">
                   <Label>Tax</Label>
                   <Select
-                    value={watch(`items.${index}.taxId`)?.toString()}
-                    onValueChange={(value) => setValue(`items.${index}.taxId`, parseInt(value))}
+                    value={watch(`items.${index}.taxId`) && watch(`items.${index}.taxId`) > 0 ? watch(`items.${index}.taxId`)?.toString() : undefined}
+                    onValueChange={(value) => setValue(`items.${index}.taxId`, parseInt(value), { shouldValidate: true })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select tax" />
@@ -252,6 +252,9 @@ export function SalesOrderForm({ order, customers, products, warehouses, taxes, 
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.items?.[index]?.taxId && (
+                    <p className="text-sm text-destructive">{errors.items[index]?.taxId?.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -259,7 +262,7 @@ export function SalesOrderForm({ order, customers, products, warehouses, taxes, 
                   <Input
                     type="number"
                     step="0.01"
-                    value={calculateLineTotal(items[index] ?? { productId: 0, quantity: 0, unitPrice: 0, taxId: undefined })}
+                    value={calculateLineTotal(items[index] ?? { productId: 0, quantity: 0, unitPrice: 0, taxId: 0 })}
                     min="0"
                     readOnly
                   />
@@ -279,7 +282,7 @@ export function SalesOrderForm({ order, customers, products, warehouses, taxes, 
           <Button
             type="button"
             variant="outline"
-            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined })}
+            onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0, taxId: 0 })}
             className="w-full"
           >
             + Add Item

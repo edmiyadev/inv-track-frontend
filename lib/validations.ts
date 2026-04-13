@@ -208,7 +208,7 @@ export const salesOrderFormSchema = z.object({
         productId: z.coerce.number().min(1, "Please select a product"),
         quantity: z.coerce.number().int().min(1, "Quantity must be at least 1"),
         unitPrice: z.coerce.number().min(0.01, "Unit price must be greater than 0"),
-        taxId: z.coerce.number(),
+        taxId: z.coerce.number().min(1, "Please select a tax"),
       }),
     )
     .min(1, "Please add at least one item"),
