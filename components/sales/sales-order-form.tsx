@@ -22,6 +22,19 @@ interface SalesOrderFormProps {
   onCancel: () => void
 }
 
+const getTodayDate = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+const getInputDate = (value?: string | null) => {
+  if (!value) return getTodayDate()
+  return value.slice(0, 10)
+}
+
 export function SalesOrderForm({ order, customers, products, warehouses, taxes, onSubmit, onCancel }: SalesOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -38,7 +51,7 @@ export function SalesOrderForm({ order, customers, products, warehouses, taxes, 
       ? {
           customerId: order.customer_id,
           warehouseId: order.warehouse_id,
-          orderDate: new Date(order.date).toISOString().split("T")[0],
+          orderDate: getInputDate(order.date),
           items: order.items?.map((item) => ({
             productId: item.product_id,
             quantity: item.quantity,
@@ -48,7 +61,7 @@ export function SalesOrderForm({ order, customers, products, warehouses, taxes, 
           notes: order.notes || "",
         }
       : {
-          orderDate: new Date().toISOString().split("T")[0],
+          orderDate: getTodayDate(),
           items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined }],
         },
   })

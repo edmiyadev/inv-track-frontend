@@ -468,6 +468,7 @@ export interface Purchase {
   notes: string | null
   created_at: string
   updated_at: string
+  date?: string | null
   supplier?: Supplier
   warehouse?: Warehouse
   items?: PurchaseItem[]
@@ -495,6 +496,7 @@ export interface CreatePurchaseItemData {
 export interface CreatePurchaseData {
   supplier_id: number
   warehouse_id?: number | null
+  date?: string | null
   notes?: string | null
   items: CreatePurchaseItemData[]
 }
@@ -503,6 +505,7 @@ export interface UpdatePurchaseData {
   supplier_id?: number
   warehouse_id?: number | null
   status?: PurchaseStatus
+  date?: string | null
   notes?: string | null
   items?: CreatePurchaseItemData[]
 }

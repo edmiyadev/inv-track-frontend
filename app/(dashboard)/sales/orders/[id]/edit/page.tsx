@@ -60,7 +60,7 @@ export default function EditSalesOrderPage({ params }: { params: Promise<{ id: s
         {
           customer_id: data.customerId,
           warehouse_id: data.warehouseId,
-          date: data.orderDate,
+          date: `${data.orderDate} 00:00:00`,
           notes: data.notes || null,
           items: data.items.map((item) => ({
             product_id: item.productId,

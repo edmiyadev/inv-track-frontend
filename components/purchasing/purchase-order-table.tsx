@@ -21,6 +21,7 @@ import { useAuthStore } from "@/lib/store/auth"
 import type { Purchase } from "@/lib/api/types"
 import { CanAccess } from "@/components/auth/can-access"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { parseApiDateToLocalDate } from "@/lib/utils"
 
 const statusColors = {
   draft: "secondary",
@@ -109,7 +110,11 @@ export function PurchaseOrderTable() {
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">PO-{order.id.toString().padStart(6, '0')}</TableCell>
                   <TableCell>{order.supplier?.name || "Unknown Supplier"}</TableCell>
-                  <TableCell>{new Date(order.purchase_date || order.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {order.date
+                      ? parseApiDateToLocalDate(order.date)?.toLocaleDateString() ?? "Sin fecha"
+                      : "Sin fecha"}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={statusColors[order.status] || "default"}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}

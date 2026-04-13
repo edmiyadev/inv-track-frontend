@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import type { PurchaseItem, Tax } from "@/lib/api/types"
 import { taxesApi } from "@/lib/api/taxes"
+import { parseApiDateToLocalDate } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,6 +88,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
 
   const isDraft = order?.status === "draft"
   const isCanceled = order?.status === "canceled"
+  const orderDate = order?.date ? parseApiDateToLocalDate(order.date) : null
 
   const taxes = taxesResponse?.data.data || []
   const getTax = (taxId?: number | null) => taxes.find((tax) => tax.id === taxId)
@@ -248,7 +250,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Order Date</span>
-              <span>{format(new Date(order.purchase_date || order.created_at), "PPP")}</span>
+              <span>{orderDate ? format(orderDate, "PPP") : "Sin fecha"}</span>
             </div>
           </CardContent>
         </Card>

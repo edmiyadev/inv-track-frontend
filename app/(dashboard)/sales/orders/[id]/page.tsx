@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { format } from "date-fns"
 import type { SaleItem } from "@/lib/api/types"
+import { parseApiDateToLocalDate } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -105,6 +106,7 @@ export default function SalesOrderDetailPage({ params }: { params: Promise<{ id:
   if (!order) return null
 
   const isDraft = order.status === "draft"
+  const orderDate = order.date ? parseApiDateToLocalDate(order.date) : null
 
   const calculateItemAmounts = (item: SaleItem) => {
     const baseAmount = parseFloat(item.unit_price) * item.quantity
@@ -216,7 +218,7 @@ export default function SalesOrderDetailPage({ params }: { params: Promise<{ id:
             </div>
             <div className="flex justify-between border-b pb-2">
               <span className="text-muted-foreground">Order Date</span>
-              <span>{format(new Date(order.date || order.created_at), "PPP")}</span>
+              <span>{orderDate ? format(orderDate, "PPP") : "Sin fecha"}</span>
             </div>
           </CardContent>
         </Card>

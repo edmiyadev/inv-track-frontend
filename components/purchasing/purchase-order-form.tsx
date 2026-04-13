@@ -23,6 +23,19 @@ interface PurchaseOrderFormProps {
   onCancel: () => void
 }
 
+const getTodayDate = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+const getInputDate = (value?: string | null) => {
+  if (!value) return getTodayDate()
+  return value.slice(0, 10)
+}
+
 export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxes, totalPrice, onSubmit, onCancel }: PurchaseOrderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -39,7 +52,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
       ? {
         supplierId: order.supplier_id,
         warehouseId: order.warehouse_id || undefined,
-        orderDate: new Date().toISOString().split("T")[0],
+        orderDate: getInputDate(order.date),
         items: order.items?.map((item) => ({
           productId: item.product_id,
           quantity: item.quantity,
@@ -50,7 +63,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
         notes: order.notes || "",
       }
       : {
-        orderDate: new Date().toISOString().split("T")[0],
+        orderDate: getTodayDate(),
         items: [{ productId: 0, quantity: 1, unitPrice: 0, taxId: undefined, totalPrice: 0 }],
       },
   })

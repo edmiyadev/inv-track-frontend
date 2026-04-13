@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query"
 import { salesApi } from "@/lib/api/sales"
 import { useAuthStore } from "@/lib/store/auth"
 import type { Sale } from "@/lib/api/types"
+import { parseApiDateToLocalDate } from "@/lib/utils"
 
 const statusColors = {
   draft: "secondary",
@@ -88,7 +89,11 @@ export function SalesOrderTable() {
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">SO-{order.id.toString().padStart(6, '0')}</TableCell>
                   <TableCell>{order.customer?.name || "Unknown Customer"}</TableCell>
-                  <TableCell>{new Date(order.date || order.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {order.date
+                      ? parseApiDateToLocalDate(order.date)?.toLocaleDateString() ?? "Sin fecha"
+                      : "Sin fecha"}
+                  </TableCell>
                   <TableCell className="font-medium">${parseFloat(order.total_amount).toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge variant={statusColors[order.status as keyof typeof statusColors] || "default"}>
