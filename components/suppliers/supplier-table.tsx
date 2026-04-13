@@ -28,6 +28,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuthStore } from "@/lib/store/auth"
 import { suppliersApi } from "@/lib/api/suppliers"
 import { PaginationControls } from "@/components/shared/pagination-controls"
+import { CanAccess } from "@/components/auth/can-access"
 import type { Supplier } from "@/lib/api/types"
 
 export function SupplierTable() {
@@ -153,26 +154,32 @@ export function SupplierTable() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href={`/suppliers/${supplier.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Ver Detalles
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/suppliers/${supplier.id}/edit`}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Editar
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          className="text-destructive"
-                          onClick={() => handleDeleteClick(supplier)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
+                        <CanAccess action="view" subject="Supplier">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/suppliers/${supplier.id}`}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Ver Detalles
+                            </Link>
+                          </DropdownMenuItem>
+                        </CanAccess>
+                        <CanAccess action="edit" subject="Supplier">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/suppliers/${supplier.id}/edit`}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Editar
+                            </Link>
+                          </DropdownMenuItem>
+                        </CanAccess>
+                        <CanAccess action="delete" subject="Supplier">
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => handleDeleteClick(supplier)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </CanAccess>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

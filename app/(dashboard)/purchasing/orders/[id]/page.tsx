@@ -27,6 +27,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useRouter } from "next/navigation"
+import { CanAccess } from "@/components/auth/can-access"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
 export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -81,40 +83,10 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Loading order...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Purchase Order" description="View purchase order details" />
-        <Alert variant="destructive">
-          <AlertDescription>{(error as Error).message || "Error loading order"}</AlertDescription>
-        </Alert>
-        <Button asChild variant="outline">
-          <Link href="/purchasing">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Purchasing
-          </Link>
-        </Button>
-      </div>
-    )
-  }
-
   const order = response?.data
 
-  if (!order) return null
-
-  const isDraft = order.status === "draft"
-  const isCanceled = order.status === "canceled"
+  const isDraft = order?.status === "draft"
+  const isCanceled = order?.status === "canceled"
 
   const taxes = taxesResponse?.data.data || []
   const getTax = (taxId?: number | null) => taxes.find((tax) => tax.id === taxId)
@@ -133,7 +105,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
     }
   }
 
-  const summary = order.items?.reduce(
+  const summary = order?.items?.reduce(
     (acc, item) => {
       const { baseAmount, taxAmount, totalAmount } = calculateItemAmounts(item)
       acc.subtotal += baseAmount
@@ -145,84 +117,116 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
   ) || { subtotal: 0, tax: 0, total: 0 }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={`PO-${order.id}`}
-        description={`Purchase order for ${order.supplier?.name || 'Unknown Supplier'}`}
-        actions={
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link href="/purchasing">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver
-              </Link>
-            </Button>
-            {isDraft && (
-              <>
-                <Button
-                  onClick={() => updateStatusMutation.mutate("posted")}
-                  disabled={updateStatusMutation.isPending}
-                >
-                  {updateStatusMutation.isPending ? "Posteando..." : "Postear factura"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => updateStatusMutation.mutate("canceled")}
-                  disabled={updateStatusMutation.isPending}
-                >
-                  Cancelar factura
-                </Button>
-                <Button asChild>
-                  <Link href={`/purchasing/orders/${resolvedParams.id}/edit`}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                  </Link>
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el pedido
-                        <strong> {order.id}</strong> del sistema.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDelete}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        disabled={isDeleting}
-                      >
-                        {isDeleting ? 'Eliminando...' : 'Eliminar'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            )}
-            {isCanceled && (
-              <Button
-                variant="outline"
-                onClick={() => updateStatusMutation.mutate("draft")}
-                disabled={updateStatusMutation.isPending}
-              >
-                {updateStatusMutation.isPending ? "Restaurando..." : "Volver a borrador"}
-              </Button>
-            )}
-            {/* <Button variant="outline">
-              <FileText className="mr-2 h-4 w-4" />
-              Generate Invoice
-            </Button> */}
+    <ProtectedRoute action="view" subject="Purchase" redirectTo="/unauthorized">
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <p className="text-muted-foreground">Loading order...</p>
           </div>
-        }
-      />
+        </div>
+      ) : isError ? (
+        <div className="space-y-6">
+          <PageHeader title="Purchase Order" description="View purchase order details" />
+          <Alert variant="destructive">
+            <AlertDescription>{(error as Error).message || "Error loading order"}</AlertDescription>
+          </Alert>
+          <Button asChild variant="outline">
+            <Link href="/purchasing">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Purchasing
+            </Link>
+          </Button>
+        </div>
+      ) : !order ? null : (
+      <div className="space-y-6">
+        <PageHeader
+          title={`PO-${order.id}`}
+          description={`Purchase order for ${order.supplier?.name || 'Unknown Supplier'}`}
+          actions={
+            <div className="flex gap-2">
+              <Button asChild variant="outline">
+                <Link href="/purchasing">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver
+                </Link>
+              </Button>
+              {isDraft && (
+                <>
+                  <CanAccess action="edit" subject="Purchase">
+                    <Button
+                      onClick={() => updateStatusMutation.mutate("posted")}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      {updateStatusMutation.isPending ? "Posteando..." : "Postear factura"}
+                    </Button>
+                  </CanAccess>
+                  <CanAccess action="edit" subject="Purchase">
+                    <Button
+                      variant="outline"
+                      onClick={() => updateStatusMutation.mutate("canceled")}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      Cancelar factura
+                    </Button>
+                  </CanAccess>
+                  <CanAccess action="edit" subject="Purchase">
+                    <Button asChild>
+                      <Link href={`/purchasing/orders/${resolvedParams.id}/edit`}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </Link>
+                    </Button>
+                  </CanAccess>
+                  <CanAccess action="delete" subject="Purchase">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el pedido
+                            <strong> {order.id}</strong> del sistema.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </CanAccess>
+                </>
+              )}
+              {isCanceled && (
+                <CanAccess action="edit" subject="Purchase">
+                  <Button
+                    variant="outline"
+                    onClick={() => updateStatusMutation.mutate("draft")}
+                    disabled={updateStatusMutation.isPending}
+                  >
+                    {updateStatusMutation.isPending ? "Restaurando..." : "Volver a borrador"}
+                  </Button>
+                </CanAccess>
+              )}
+              {/* <Button variant="outline">
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Invoice
+              </Button> */}
+            </div>
+          }
+        />
 
       {statusError && (
         <Alert variant="destructive">
@@ -336,6 +340,8 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+      )}
+    </ProtectedRoute>
   )
 }

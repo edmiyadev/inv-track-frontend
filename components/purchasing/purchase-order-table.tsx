@@ -19,6 +19,8 @@ import { useQuery } from "@tanstack/react-query"
 import { purchasingApi } from "@/lib/api/purchasing"
 import { useAuthStore } from "@/lib/store/auth"
 import type { Purchase } from "@/lib/api/types"
+import { CanAccess } from "@/components/auth/can-access"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const statusColors = {
   draft: "secondary",
@@ -30,17 +32,27 @@ export function PurchaseOrderTable() {
   const { accessToken } = useAuthStore()
   const [searchQuery, setSearchQuery] = useState("")
 
-  const { data: ordersResponse, isLoading } = useQuery({
-    queryKey: ["purchases"],
+  const { data: ordersResponse, isLoading, isError, error } = useQuery({
+    queryKey: ["purchases", accessToken],
     queryFn: () => purchasingApi.getAllPurchases(accessToken!, 1, 50),
     enabled: !!accessToken,
   })
 
-  const orders: Purchase[] = ordersResponse?.data.data ?? []
+  const purchasesPayload = ordersResponse?.data as
+    | Purchase[]
+    | { data?: Purchase[] | { data?: Purchase[] } }
+    | undefined
 
+  const orders: Purchase[] = Array.isArray(purchasesPayload)
+    ? purchasesPayload
+    : Array.isArray(purchasesPayload?.data)
+      ? purchasesPayload.data
+      : Array.isArray(purchasesPayload?.data?.data)
+        ? purchasesPayload.data.data
+        : []
   const filteredOrders = orders.filter(
     (order) =>
-      order.supplier?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.supplier?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.id.toString().includes(searchQuery)
   )
 
@@ -49,6 +61,16 @@ export function PurchaseOrderTable() {
       <div className="flex h-48 items-center justify-center rounded-lg border border-border bg-card">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          {error instanceof Error ? error.message : "Error al cargar las compras"}
+        </AlertDescription>
+      </Alert>
     )
   }
 
@@ -106,28 +128,34 @@ export function PurchaseOrderTable() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/purchasing/orders/${order.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </Link>
-                        </DropdownMenuItem>
+                        <CanAccess action="view" subject="Purchase">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/purchasing/orders/${order.id}`}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Details
+                            </Link>
+                          </DropdownMenuItem>
+                        </CanAccess>
                         {order.status === 'draft' && (
                           <>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/purchasing/orders/${order.id}/edit`}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive"
-                            // onClick={() => handleDeleteClick(product)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Eliminar
-                            </DropdownMenuItem>
+                            <CanAccess action="edit" subject="Purchase">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/purchasing/orders/${order.id}/edit`}>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit
+                                </Link>
+                              </DropdownMenuItem>
+                            </CanAccess>
+                            <CanAccess action="delete" subject="Purchase">
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive"
+                              // onClick={() => handleDeleteClick(product)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </CanAccess>
                           </>
 
                         )}

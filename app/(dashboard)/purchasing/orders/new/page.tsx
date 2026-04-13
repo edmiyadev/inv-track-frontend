@@ -12,6 +12,7 @@ import { useAuthStore } from "@/lib/store/auth"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useState } from "react"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
 export default function NewPurchaseOrderPage() {
   const router = useRouter()
@@ -85,21 +86,23 @@ export default function NewPurchaseOrderPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Create Purchase Order" description="Create a new purchase order" />
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      <PurchaseOrderForm
-        suppliers={suppliersResponse?.data.data || []}
-        products={productsResponse?.data.data || []}
-        warehouses={warehousesResponse?.data.data || []}
-        taxes={taxesResponse?.data.data || []}
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-      />
-    </div>
+    <ProtectedRoute action="create" subject="Purchase" redirectTo="/unauthorized">
+      <div className="space-y-6">
+        <PageHeader title="Create Purchase Order" description="Create a new purchase order" />
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        <PurchaseOrderForm
+          suppliers={suppliersResponse?.data.data || []}
+          products={productsResponse?.data.data || []}
+          warehouses={warehousesResponse?.data.data || []}
+          taxes={taxesResponse?.data.data || []}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+        />
+      </div>
+    </ProtectedRoute>
   )
 }

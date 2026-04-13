@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
 export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -114,37 +115,39 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
   const isEditable = order?.status === "draft"
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={`Edit PO-${order?.id}`} description="Update purchase order details" />
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {order && !isEditable && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Esta factura está en estado <strong>{order.status}</strong> y no se puede editar.
-          </AlertDescription>
-        </Alert>
-      )}
-      {order && (
-        isEditable ? (
-          <PurchaseOrderForm
-            order={order}
-            suppliers={suppliersResponse?.data.data || []}
-            products={productsResponse?.data.data || []}
-            warehouses={warehousesResponse?.data.data || []}
-            taxes={taxesResponse?.data.data || []}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-          />
-        ) : (
-          <Button asChild variant="outline">
-            <Link href={`/purchasing/orders/${resolvedParams.id}`}>Volver al detalle</Link>
-          </Button>
-        )
-      )}
-    </div>
+    <ProtectedRoute action="edit" subject="Purchase" redirectTo="/unauthorized">
+      <div className="space-y-6">
+        <PageHeader title={`Edit PO-${order?.id}`} description="Update purchase order details" />
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        {order && !isEditable && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              Esta factura está en estado <strong>{order.status}</strong> y no se puede editar.
+            </AlertDescription>
+          </Alert>
+        )}
+        {order && (
+          isEditable ? (
+            <PurchaseOrderForm
+              order={order}
+              suppliers={suppliersResponse?.data.data || []}
+              products={productsResponse?.data.data || []}
+              warehouses={warehousesResponse?.data.data || []}
+              taxes={taxesResponse?.data.data || []}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+            />
+          ) : (
+            <Button asChild variant="outline">
+              <Link href={`/purchasing/orders/${resolvedParams.id}`}>Volver al detalle</Link>
+            </Button>
+          )
+        )}
+      </div>
+    </ProtectedRoute>
   )
 }
