@@ -99,12 +99,12 @@ export function StockHistoryTimeline() {
                     {getTimeAgo(item.timestamp)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {/* <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Badge variant="outline" className="text-[10px] h-5">
                     {item.reason}
                   </Badge>
                   <span>by {item.performedBy}</span>
-                </div>
+                </div> */}
               </div>
             </div>
           ))}
