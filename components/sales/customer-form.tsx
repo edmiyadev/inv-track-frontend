@@ -133,7 +133,7 @@ export function CustomerForm({ customer, customerId }: CustomerFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="tax_id">
-                Tax ID
+                Cédula
               </Label>
               <Input
                 id="tax_id"

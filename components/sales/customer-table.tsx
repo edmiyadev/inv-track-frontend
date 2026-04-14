@@ -95,7 +95,7 @@ export function CustomerTable() {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
-              <TableHead>Tax ID</TableHead>
+              <TableHead>Cédula</TableHead>
               <TableHead>Contacto</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>

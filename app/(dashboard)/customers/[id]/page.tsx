@@ -155,7 +155,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                 <div className="flex items-start gap-3">
                   <Hash className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-muted-foreground">Tax ID</p>
+                    <p className="text-sm font-medium text-muted-foreground">Cédula</p>
                     <p className="text-lg font-mono">{customer.tax_id || "N/A"}</p>
                   </div>
                 </div>
