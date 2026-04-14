@@ -79,7 +79,7 @@ export function PurchaseOrderTable() {
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Input
-          placeholder="Search purchases..."
+          placeholder="Buscar compras..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
@@ -90,10 +90,10 @@ export function PurchaseOrderTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>PO Number</TableHead>
-              <TableHead>Supplier</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>N° de Orden</TableHead>
+              <TableHead>Proveedor</TableHead>
+              <TableHead>Fecha</TableHead>
+              <TableHead>Estado</TableHead>
               <TableHead className="text-right">Total</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
@@ -102,14 +102,14 @@ export function PurchaseOrderTable() {
             {filteredOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No purchases found.
+                  No se encontraron compras.
                 </TableCell>
               </TableRow>
             ) : (
               filteredOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">PO-{order.id.toString().padStart(6, '0')}</TableCell>
-                  <TableCell>{order.supplier?.name || "Unknown Supplier"}</TableCell>
+                  <TableCell>{order.supplier?.name || "Proveedor desconocido"}</TableCell>
                   <TableCell>
                     {order.date
                       ? parseApiDateToLocalDate(order.date)?.toLocaleDateString() ?? "Sin fecha"
@@ -132,12 +132,12 @@ export function PurchaseOrderTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <CanAccess action="view" subject="Purchase">
                           <DropdownMenuItem asChild>
                             <Link href={`/purchasing/orders/${order.id}`}>
                               <Eye className="mr-2 h-4 w-4" />
-                              View Details
+                              Ver Detalles
                             </Link>
                           </DropdownMenuItem>
                         </CanAccess>
@@ -147,7 +147,7 @@ export function PurchaseOrderTable() {
                               <DropdownMenuItem asChild>
                                 <Link href={`/purchasing/orders/${order.id}/edit`}>
                                   <Pencil className="mr-2 h-4 w-4" />
-                                  Edit
+                                  Editar
                                 </Link>
                               </DropdownMenuItem>
                             </CanAccess>

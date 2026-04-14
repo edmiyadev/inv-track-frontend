@@ -62,7 +62,7 @@ export default function NewPurchaseOrderPage() {
       router.push("/purchasing")
     },
     onError: (err: any) => {
-      setError(err.message || "Failed to create purchase order")
+      setError(err.message || "Error al crear la orden de compra")
     },
   })
 
@@ -80,7 +80,7 @@ export default function NewPurchaseOrderPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Loading data...</p>
+          <p className="text-muted-foreground">Cargando datos...</p>
         </div>
       </div>
     )
@@ -89,7 +89,7 @@ export default function NewPurchaseOrderPage() {
   return (
     <ProtectedRoute action="create" subject="Purchase" redirectTo="/unauthorized">
       <div className="space-y-6">
-        <PageHeader title="Create Purchase Order" description="Create a new purchase order" />
+        <PageHeader title="Crear Orden de Compra" description="Crea una nueva orden de compra" />
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>

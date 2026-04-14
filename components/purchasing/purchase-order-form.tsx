@@ -141,21 +141,21 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Order Information</CardTitle>
-          <CardDescription>Enter purchase order details</CardDescription>
+          <CardTitle>Información de la Orden</CardTitle>
+          <CardDescription>Ingresa los detalles de la orden de compra</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="supplierId">
-                Supplier <span className="text-destructive">*</span>
+                Proveedor <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={watch("supplierId")?.toString()}
                 onValueChange={(value) => setValue("supplierId", parseInt(value))}
               >
                 <SelectTrigger className="w-full" >
-                  <SelectValue placeholder="Select supplier" />
+                  <SelectValue placeholder="Seleccionar proveedor" />
                 </SelectTrigger>
                 <SelectContent>
                   {suppliers.map((supplier) => (
@@ -170,14 +170,14 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
 
             <div className="space-y-2">
               <Label htmlFor="warehouseId">
-                Warehouse <span className="text-destructive">*</span>
+                Almacén <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={watch("warehouseId")?.toString()}
                 onValueChange={(value) => setValue("warehouseId", parseInt(value))}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select warehouse" />
+                  <SelectValue placeholder="Seleccionar almacén" />
                 </SelectTrigger>
                 <SelectContent>
                   {warehouses.map((warehouse) => (
@@ -192,7 +192,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
 
             <div className="space-y-2">
               <Label htmlFor="orderDate">
-                Date <span className="text-destructive">*</span>
+                Fecha <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="orderDate"
@@ -207,17 +207,17 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
 
       <Card>
         <CardHeader>
-          <CardTitle>Additional Notes</CardTitle>
+          <CardTitle>Notas Adicionales</CardTitle>
         </CardHeader>
         <CardContent>
-          <Textarea {...register("notes")} placeholder="Enter any additional notes or instructions" rows={4} />
+          <Textarea {...register("notes")} placeholder="Ingresa notas o instrucciones adicionales" rows={4} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Order Items</CardTitle>
-          <CardDescription>Add products to this purchase order</CardDescription>
+          <CardTitle>Artículos de la Orden</CardTitle>
+          <CardDescription>Agrega productos a esta orden de compra</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {fields.map((field, index) => (
@@ -225,7 +225,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
               <div className="flex-1 grid gap-4 md:grid-cols-[2fr_0.7fr_0.9fr_1.2fr_0.9fr]">
 
                 <div className="space-y-2">
-                  <Label>Product</Label>
+                  <Label>Producto</Label>
                   <Select
                     value={watch(`items.${index}.productId`)?.toString()}
                     onValueChange={(value) => {
@@ -238,7 +238,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                     }}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select product" />
+                      <SelectValue placeholder="Seleccionar producto" />
                     </SelectTrigger>
                     <SelectContent>
                       {products.map((product) => (
@@ -254,7 +254,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Quantity</Label>
+                  <Label>Cantidad</Label>
                   <Input
                     type="number"
                     {...register(`items.${index}.quantity`, { valueAsNumber: true })}
@@ -266,7 +266,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Unit Price</Label>
+                  <Label>Precio Unitario</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -279,13 +279,13 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tax</Label>
+                  <Label>Impuesto</Label>
                   <Select
                     value={watch(`items.${index}.taxId`) && watch(`items.${index}.taxId`) > 0 ? watch(`items.${index}.taxId`)?.toString() : undefined}
                     onValueChange={(value) => setValue(`items.${index}.taxId`, parseInt(value), { shouldValidate: true })}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select tax" />
+                      <SelectValue placeholder="Seleccionar impuesto" />
                     </SelectTrigger>
                     <SelectContent>
                       {taxes.map((tax) => (
@@ -332,7 +332,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
             onClick={() => append({ productId: 0, quantity: 1, unitPrice: 0, taxId: 0, totalPrice: 0 })}
             className="w-full"
           >
-            + Add Item
+            + Agregar Artículo
           </Button>
 
           <div className="border-t pt-4 space-y-2">
@@ -354,10 +354,10 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
 
       <div className="flex justify-end gap-4">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          Cancelar
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : order ? "Update Order" : "Create Order"}
+          {isSubmitting ? "Guardando..." : order ? "Actualizar Orden" : "Crear Orden"}
         </Button>
       </div>
     </form>
