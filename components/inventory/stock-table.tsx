@@ -97,7 +97,7 @@ export function StockTable() {
             <TableHead className="text-right">Punto de Reorden</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Última Actualización</TableHead>
-            <TableHead className="w-[100px]">Acciones</TableHead>
+            {/* <TableHead className="w-[100px]">Acciones</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -112,7 +112,7 @@ export function StockTable() {
               <TableCell className="text-sm text-muted-foreground">
                 {new Date(stock.updated_at).toLocaleDateString()}
               </TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <Dialog open={isAdjustmentOpen && selectedStock?.id === stock.id} onOpenChange={(open) => {
                   if (open) setSelectedStock(stock)
                   setIsAdjustmentOpen(open)
@@ -137,7 +137,7 @@ export function StockTable() {
                     )}
                   </DialogContent>
                 </Dialog>
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           ))}
           {stocks.length === 0 && (
