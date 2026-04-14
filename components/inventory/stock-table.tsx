@@ -47,9 +47,9 @@ export function StockTable() {
     } as const
 
     const labels = {
-      "in-stock": "In Stock",
-      "low-stock": "Low Stock",
-      "out-of-stock": "Out of Stock",
+      "in-stock": "En Stock",
+      "low-stock": "Stock Bajo",
+      "out-of-stock": "Sin Stock",
     }
 
     return (
@@ -70,7 +70,7 @@ export function StockTable() {
   if (error) {
     return (
       <div className="flex h-48 items-center justify-center rounded-lg border border-border bg-card text-destructive">
-        Error loading stocks
+        Error al cargar el inventario
       </div>
     )
   }
@@ -82,28 +82,28 @@ export function StockTable() {
           <TableRow>
             <TableHead>
               <Button variant="ghost" size="sm" className="h-8 px-2">
-                Product
+                Producto
                 <ArrowUpDown className="ml-2 h-3 w-3" />
               </Button>
             </TableHead>
             <TableHead>SKU</TableHead>
-            <TableHead>Warehouse</TableHead>
+            <TableHead>Almacén</TableHead>
             <TableHead className="text-right">
               <Button variant="ghost" size="sm" className="h-8 px-2">
-                Current Stock
+                Stock Actual
                 <ArrowUpDown className="ml-2 h-3 w-3" />
               </Button>
             </TableHead>
-            <TableHead className="text-right">Reorder Point</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Updated</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="text-right">Punto de Reorden</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Última Actualización</TableHead>
+            <TableHead className="w-[100px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {stocks.map((stock) => (
             <TableRow key={stock.id}>
-              <TableCell className="font-medium">{stock.product?.name || "Unknown Product"}</TableCell>
+              <TableCell className="font-medium">{stock.product?.name || "Producto desconocido"}</TableCell>
               <TableCell className="font-mono text-sm text-muted-foreground">{stock.product?.sku || "-"}</TableCell>
               <TableCell className="text-sm text-muted-foreground">{stock.warehouse?.name || "-"}</TableCell>
               <TableCell className="text-right font-semibold">{stock.quantity}</TableCell>
@@ -119,14 +119,14 @@ export function StockTable() {
                 }}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">
-                      Adjust
+                      Ajustar
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Adjust Stock</DialogTitle>
+                      <DialogTitle>Ajustar Stock</DialogTitle>
                       <DialogDescription>
-                        Update stock levels for {stock.product?.name} in {stock.warehouse?.name}
+                        Actualizar niveles de stock de {stock.product?.name} en {stock.warehouse?.name}
                       </DialogDescription>
                     </DialogHeader>
                     {selectedStock && (
@@ -143,7 +143,7 @@ export function StockTable() {
           {stocks.length === 0 && (
             <TableRow>
               <TableCell colSpan={8} className="h-24 text-center">
-                No stocks found.
+                No se encontraron registros de stock.
               </TableCell>
             </TableRow>
           )}

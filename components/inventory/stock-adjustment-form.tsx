@@ -86,7 +86,7 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
       onSuccess?.()
     },
     onError: (err: any) => {
-      setError(err.message || "Failed to create adjustment")
+      setError(err.message || "Error al crear el ajuste")
     },
   })
 
@@ -104,12 +104,12 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
       )}
       
       <div className="rounded-lg border border-border bg-muted/50 p-4">
-        <p className="text-sm font-medium">Current Stock</p>
-        <p className="mt-1 text-2xl font-bold">{stock.quantity} units</p>
+        <p className="text-sm font-medium">Stock Actual</p>
+        <p className="mt-1 text-2xl font-bold">{stock.quantity} unidades</p>
       </div>
 
       <div className="space-y-3">
-        <Label>Adjustment Type</Label>
+        <Label>Tipo de Ajuste</Label>
         <RadioGroup 
           defaultValue="add" 
           className="grid grid-cols-3 gap-3"
@@ -122,7 +122,7 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
               className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
             >
               <Plus className="mb-2 h-5 w-5" />
-              <span className="text-sm font-medium">Add Stock</span>
+              <span className="text-sm font-medium">Agregar</span>
             </Label>
           </div>
           <div>
@@ -132,7 +132,7 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
               className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
             >
               <Minus className="mb-2 h-5 w-5" />
-              <span className="text-sm font-medium">Remove</span>
+              <span className="text-sm font-medium">Retirar</span>
             </Label>
           </div>
           <div>
@@ -142,7 +142,7 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
               className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
             >
               <RefreshCw className="mb-2 h-5 w-5" />
-              <span className="text-sm font-medium">Set Total</span>
+              <span className="text-sm font-medium">Establecer Total</span>
             </Label>
           </div>
         </RadioGroup>
@@ -150,12 +150,12 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
 
       <div className="space-y-2">
         <Label htmlFor="quantity">
-          {adjustmentType === "adjust" ? "New Total Stock" : "Quantity"}
+          {adjustmentType === "adjust" ? "Nuevo Total de Stock" : "Cantidad"}
         </Label>
         <Input 
           id="quantity" 
           type="number" 
-          placeholder="Enter quantity" 
+          placeholder="Ingresa la cantidad"
           min="0" 
           {...register("quantity")}
         />
@@ -163,10 +163,10 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="reason">Reason</Label>
-        <Textarea 
-          id="reason" 
-          placeholder="Enter reason for adjustment" 
+        <Label htmlFor="reason">Motivo</Label>
+        <Textarea
+          id="reason"
+          placeholder="Ingresa el motivo del ajuste"
           rows={3} 
           {...register("reason")}
         />
@@ -175,11 +175,11 @@ export function StockAdjustmentForm({ stock, onSuccess }: StockAdjustmentFormPro
 
       <div className="flex justify-end gap-3 pt-2">
         <Button type="button" variant="outline" onClick={onSuccess}>
-          Cancel
+          Cancelar
         </Button>
         <Button type="submit" disabled={mutation.isPending}>
           {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Confirm Adjustment
+          Confirmar Ajuste
         </Button>
       </div>
     </form>

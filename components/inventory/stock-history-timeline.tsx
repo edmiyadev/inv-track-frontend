@@ -23,18 +23,18 @@ export function StockHistoryTimeline() {
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
     const hours = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60))
-    if (hours < 1) return "Just now"
-    if (hours < 24) return `${hours} hours ago`
+    if (hours < 1) return "Hace un momento"
+    if (hours < 24) return `Hace ${hours} hora${hours > 1 ? "s" : ""}`
     const days = Math.floor(hours / 24)
-    return `${days} day${days > 1 ? "s" : ""} ago`
+    return `Hace ${days} día${days > 1 ? "s" : ""}`
   }
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Stock Movement History</CardTitle>
-          <CardDescription>Recent inventory transactions and adjustments</CardDescription>
+          <CardTitle>Historial de Movimientos</CardTitle>
+          <CardDescription>Transacciones y ajustes recientes del inventario</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -47,7 +47,7 @@ export function StockHistoryTimeline() {
   const historyItems = movements.flatMap((movement: Movement) =>
     (movement.items || []).map((item: MovementItem) => ({
       id: `${movement.id}-${item.id}`,
-      productName: item.product?.name || "Unknown Product",
+      productName: item.product?.name || "Producto desconocido",
       type: movement.movement_type,
       quantity: item.quantity,
       reason: movement.notes || "No notes",
@@ -60,8 +60,8 @@ export function StockHistoryTimeline() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Stock Movement History</CardTitle>
-        <CardDescription>Recent inventory transactions and adjustments</CardDescription>
+        <CardTitle>Historial de Movimientos</CardTitle>
+        <CardDescription>Transacciones y ajustes recientes del inventario</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="relative space-y-4">
@@ -91,8 +91,8 @@ export function StockHistoryTimeline() {
                   <div>
                     <p className="font-medium leading-none">{item.productName}</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {item.type === "in" ? "Received" : item.type === "out" ? "Shipped" : "Adjusted"}{" "}
-                      <span className="font-medium text-foreground">{Math.abs(item.quantity)}</span> units
+                      {item.type === "in" ? "Recibido" : item.type === "out" ? "Enviado" : "Ajustado"}{" "}
+                      <span className="font-medium text-foreground">{Math.abs(item.quantity)}</span> unidades
                     </p>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -111,7 +111,7 @@ export function StockHistoryTimeline() {
 
           {historyItems.length === 0 && (
             <div className="text-center text-muted-foreground py-4">
-              No movements found.
+              No se encontraron movimientos.
             </div>
           )}
         </div>

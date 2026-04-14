@@ -11,24 +11,24 @@ export default function ProfileSettingsPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Update your personal information and contact details</CardDescription>
+          <CardTitle>Información del Perfil</CardTitle>
+          <CardDescription>Actualiza tu información personal y datos de contacto</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="first-name">First Name</Label>
-              <Input id="first-name" placeholder="Enter first name" defaultValue="Admin" />
+              <Label htmlFor="first-name">Nombre</Label>
+              <Input id="first-name" placeholder="Ingresa tu nombre" defaultValue="Admin" />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="last-name">Last Name</Label>
-              <Input id="last-name" placeholder="Enter last name" defaultValue="User" />
+              <Label htmlFor="last-name">Apellido</Label>
+              <Input id="last-name" placeholder="Ingresa tu apellido" defaultValue="User" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Correo Electrónico</Label>
             <Input id="email" type="email" placeholder="your@email.com" defaultValue="admin@inventory.com" />
           </div>
 
@@ -37,22 +37,22 @@ export default function ProfileSettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Change Password</CardTitle>
-          <CardDescription>Update your password to keep your account secure</CardDescription>
+          <CardTitle>Cambiar Contraseña</CardTitle>
+          <CardDescription>Actualiza tu contraseña para mantener tu cuenta segura</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="current-password">Current Password</Label>
+            <Label htmlFor="current-password">Contraseña Actual</Label>
             <Input id="current-password" type="password" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new-password">New Password</Label>
+            <Label htmlFor="new-password">Nueva Contraseña</Label>
             <Input id="new-password" type="password" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm New Password</Label>
+            <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
             <Input id="confirm-password" type="password" />
           </div>
         </CardContent>

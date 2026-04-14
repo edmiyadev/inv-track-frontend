@@ -58,7 +58,7 @@ export function SalesOrderTable() {
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Input
-          placeholder="Search sales orders..."
+          placeholder="Buscar órdenes de venta..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
@@ -69,11 +69,11 @@ export function SalesOrderTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>SO Number</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Order Date</TableHead>
+              <TableHead>N° de Orden</TableHead>
+              <TableHead>Cliente</TableHead>
+              <TableHead>Fecha de Orden</TableHead>
               <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Estado</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -81,14 +81,14 @@ export function SalesOrderTable() {
             {filteredOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No sales orders found.
+                  No se encontraron órdenes de venta.
                 </TableCell>
               </TableRow>
             ) : (
               filteredOrders.map((order: Sale) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">SO-{order.id.toString().padStart(6, '0')}</TableCell>
-                  <TableCell>{order.customer?.name || "Unknown Customer"}</TableCell>
+                  <TableCell>{order.customer?.name || "Cliente desconocido"}</TableCell>
                   <TableCell>
                     {order.date
                       ? parseApiDateToLocalDate(order.date)?.toLocaleDateString() ?? "Sin fecha"
@@ -108,12 +108,12 @@ export function SalesOrderTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                           <Link href={`/sales/orders/${order.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View Details
+                            Ver Detalles
                           </Link>
                         </DropdownMenuItem>
                         {order.status === 'draft' && (
@@ -121,7 +121,7 @@ export function SalesOrderTable() {
                             <DropdownMenuItem asChild>
                               <Link href={`/sales/orders/${order.id}/edit`}>
                                 <Pencil className="mr-2 h-4 w-4" />
-                                Edit
+                                Editar
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />

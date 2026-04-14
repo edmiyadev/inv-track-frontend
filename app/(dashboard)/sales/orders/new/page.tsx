@@ -66,7 +66,7 @@ export default function NewSalesOrderPage() {
       router.push("/sales")
     },
     onError: (err: any) => {
-      setError(err.message || "Failed to create sales order")
+      setError(err.message || "Error al crear la orden de venta")
     },
   })
 
@@ -84,7 +84,7 @@ export default function NewSalesOrderPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Loading data...</p>
+          <p className="text-muted-foreground">Cargando datos...</p>
         </div>
       </div>
     )
@@ -92,7 +92,7 @@ export default function NewSalesOrderPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Create Sales Order" description="Create a new sales order" />
+      <PageHeader title="Crear Orden de Venta" description="Crea una nueva orden de venta" />
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>

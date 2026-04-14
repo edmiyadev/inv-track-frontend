@@ -7,8 +7,8 @@ export default function InventoryHistoryPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Stock Movement History"
-        description="View all inventory transactions and adjustments"
+        title="Historial de Movimientos"
+        description="Ver todas las transacciones y ajustes del inventario"
       />
 
       <StockHistoryTimeline />

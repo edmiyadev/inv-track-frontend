@@ -9,7 +9,7 @@ export default function SettingsLayout({
 }) {
   return (
     <div className="space-y-6">
-      <PageHeader title="Settings" description="Manage your account and application preferences" />
+      <PageHeader title="Configuración" description="Gestiona tu cuenta y las preferencias de la aplicación" />
       <div>{children}</div>
     </div>
   )

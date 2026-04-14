@@ -4,7 +4,7 @@ import { UserForm } from "@/components/users/user-form"
 export default function NewUserPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Create User" description="Add a new user to the system" />
+      <PageHeader title="Crear Usuario" description="Agrega un nuevo usuario al sistema" />
 
       <UserForm mode="create" />
     </div>
