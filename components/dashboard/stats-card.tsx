@@ -25,8 +25,8 @@ export function StatsCard({ title, value, change, icon: Icon, description }: Sta
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
         {change && (
           <p className={cn("text-xs mt-1", change.trend === "up" ? "text-success" : "text-destructive")}>
-            {change.trend === "up" ? "+" : ""}
-            {change.value}% from last month
+            {change.trend === "up" ? "+" : "-"}
+            {change.value}% respecto al mes anterior
           </p>
         )}
       </CardContent>

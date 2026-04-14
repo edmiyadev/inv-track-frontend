@@ -5,17 +5,17 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 const data = [
-  { month: "Jan", stock: 186 },
-  { month: "Feb", stock: 305 },
-  { month: "Mar", stock: 237 },
-  { month: "Apr", stock: 273 },
-  { month: "May", stock: 209 },
-  { month: "Jun", stock: 314 },
+  { month: "Enero", stock: 186 },
+  { month: "Febrero", stock: 305 },
+  { month: "Marzo", stock: 237 },
+  { month: "Abril", stock: 273 },
+  { month: "Mayo", stock: 209 },
+  { month: "Junio", stock: 314 },
 ]
 
 const chartConfig = {
   stock: {
-    label: "Stock Level",
+    label: "Nivel de Stock",
     color: "hsl(var(--chart-1))",
   },
 }
@@ -24,8 +24,8 @@ export function InventoryChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Stock Levels Overview</CardTitle>
-        <CardDescription>Monthly inventory trends for the past 6 months</CardDescription>
+        <CardTitle>Resumen de Niveles de Stock</CardTitle>
+        <CardDescription>Tendencia mensual del inventario en los últimos 6 meses</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">

@@ -19,9 +19,9 @@ export function LowStockAlert() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-warning" />
-              Low Stock Alerts
+              Alertas de Stock Bajo
             </CardTitle>
-            <CardDescription>Products below reorder point</CardDescription>
+            <CardDescription>Productos por debajo del punto de reorden</CardDescription>
           </div>
           <Badge variant="destructive">{lowStockItems.length}</Badge>
         </div>
@@ -35,13 +35,13 @@ export function LowStockAlert() {
                 <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-destructive">{item.current} units</p>
-                <p className="text-xs text-muted-foreground">Reorder: {item.reorder}</p>
+                <p className="text-sm font-bold text-destructive">{item.current} unidades</p>
+                <p className="text-xs text-muted-foreground">Reorden: {item.reorder}</p>
               </div>
             </div>
           ))}
           <Button asChild className="w-full bg-transparent" variant="outline">
-            <Link href="/inventory">View All Inventory</Link>
+            <Link href="/inventory">Ver Todo el Inventario</Link>
           </Button>
         </div>
       </CardContent>

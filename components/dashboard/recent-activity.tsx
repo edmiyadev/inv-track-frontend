@@ -8,7 +8,7 @@ const activities = [
     product: "Wireless Mouse",
     quantity: 50,
     user: "John Doe",
-    time: "2 hours ago",
+    time: "hace 2 horas",
   },
   {
     id: 2,
@@ -16,7 +16,7 @@ const activities = [
     product: "USB-C Cable",
     quantity: 25,
     user: "Jane Smith",
-    time: "4 hours ago",
+    time: "hace 4 horas",
   },
   {
     id: 3,
@@ -24,7 +24,7 @@ const activities = [
     product: "Laptop Stand",
     quantity: 5,
     user: "Admin",
-    time: "6 hours ago",
+    time: "hace 6 horas",
   },
   {
     id: 4,
@@ -32,7 +32,7 @@ const activities = [
     product: "Mechanical Keyboard",
     quantity: 30,
     user: "John Doe",
-    time: "1 day ago",
+    time: "hace 1 día",
   },
 ]
 
@@ -40,8 +40,8 @@ export function RecentActivity() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-        <CardDescription>Latest inventory movements and updates</CardDescription>
+        <CardTitle>Actividad Reciente</CardTitle>
+        <CardDescription>Últimos movimientos y actualizaciones del inventario</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -67,8 +67,8 @@ export function RecentActivity() {
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium leading-none">{activity.product}</p>
                 <p className="text-xs text-muted-foreground">
-                  {activity.type === "in" ? "Added" : activity.type === "out" ? "Removed" : "Adjusted"}{" "}
-                  {activity.quantity} units by {activity.user}
+                  {activity.type === "in" ? "Agregado" : activity.type === "out" ? "Retirado" : "Ajustado"}{" "}
+                  {activity.quantity} unidades por {activity.user}
                 </p>
               </div>
               <div className="text-xs text-muted-foreground">{activity.time}</div>
