@@ -17,6 +17,38 @@ import { rolesApi } from "@/lib/api/roles"
 import { permissionsApi } from "@/lib/api/permissions"
 import { Permission } from "@/lib/api/types"
 
+const resourceLabels: Record<string, string> = {
+  users: "Usuarios",
+  roles: "Roles",
+  products: "Productos",
+  suppliers: "Proveedores",
+  purchases: "Compras",
+  sales: "Ventas",
+  inventory: "Inventario",
+  warehouses: "Almacenes",
+  customers: "Clientes",
+  taxes: "Impuestos",
+  reports: "Reportes",
+  settings: "Configuración",
+  purchase: "Compras",
+  sale: "Ventas",
+}
+
+const actionLabels: Record<string, string> = {
+  viewAny: "Ver listado",
+  view: "Ver detalle",
+  create: "Crear",
+  update: "Editar",
+  delete: "Eliminar",
+  restore: "Restaurar",
+  forceDelete: "Eliminar permanente",
+  syncRoles: "Sincronizar roles",
+  approve: "Aprobar",
+  cancel: "Cancelar",
+  post: "Publicar",
+  edit: "Editar",
+}
+
 const roleFormSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   permissions: z.array(z.string()).min(1, "Debe seleccionar al menos un permiso"),
@@ -186,7 +218,7 @@ export function RoleForm({ mode, roleId, defaultValues }: RoleFormProps) {
                       onCheckedChange={(checked) => handleSelectAllGroup(resource, checked as boolean)}
                     />
                     <Label htmlFor={`group-${resource}`} className="font-semibold capitalize cursor-pointer">
-                      {resource.replace("_", " ")}
+                      {resourceLabels[resource] ?? resource.replace("_", " ")}
                     </Label>
                   </div>
                   <div className="space-y-2">
@@ -198,7 +230,7 @@ export function RoleForm({ mode, roleId, defaultValues }: RoleFormProps) {
                           onCheckedChange={(checked) => handlePermissionChange(permission.name, checked as boolean)}
                         />
                         <Label htmlFor={permission.name} className="text-sm font-normal cursor-pointer">
-                          {permission.name.split(".")[1] || permission.name}
+                          {actionLabels[permission.name.split(".")[1]] ?? permission.name.split(".")[1] ?? permission.name}
                         </Label>
                       </div>
                     ))}
