@@ -80,7 +80,7 @@ export default function EditSalesOrderPage({ params }: { params: Promise<{ id: s
       router.push("/sales")
     },
     onError: (err: any) => {
-      setError(err.message || "Failed to update sales order")
+      setError(err.message || "Error al actualizar la orden de venta")
     },
   })
 
@@ -98,7 +98,7 @@ export default function EditSalesOrderPage({ params }: { params: Promise<{ id: s
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Loading data...</p>
+          <p className="text-muted-foreground">Cargando datos...</p>
         </div>
       </div>
     )
@@ -107,13 +107,13 @@ export default function EditSalesOrderPage({ params }: { params: Promise<{ id: s
   if (isError) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Edit Sales Order" description="Update sales order details" />
+        <PageHeader title="Editar Orden de Venta" description="Actualizar detalles de la orden de venta" />
         <Alert variant="destructive">
-          <AlertDescription>{(fetchError as Error).message || "Error loading order"}</AlertDescription>
+          <AlertDescription>{(fetchError as Error).message || "Error al cargar la orden"}</AlertDescription>
         </Alert>
         <Button asChild variant="outline">
           <Link href="/sales">
-            Back to Sales
+            Volver a Ventas
           </Link>
         </Button>
       </div>
@@ -125,7 +125,7 @@ export default function EditSalesOrderPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="space-y-6">
-      <PageHeader title={`Edit SO-${order?.id}`} description="Update sales order details" />
+      <PageHeader title={`Editar SO-${order?.id}`} description="Actualizar detalles de la orden de venta" />
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>

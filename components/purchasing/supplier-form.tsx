@@ -57,41 +57,41 @@ export function SupplierForm({ supplier, onSubmit, onCancel }: SupplierFormProps
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Supplier Information</CardTitle>
-          <CardDescription>Enter the supplier's basic information</CardDescription>
+          <CardTitle>Información del Proveedor</CardTitle>
+          <CardDescription>Ingresa la información básica del proveedor</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">
-                Supplier Name <span className="text-destructive">*</span>
+                Nombre del Proveedor <span className="text-destructive">*</span>
               </Label>
-              <Input id="name" {...register("name")} placeholder="Enter supplier name" />
+              <Input id="name" {...register("name")} placeholder="Ingresa el nombre del proveedor" />
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="rnc">RNC</Label>
-              <Input id="rnc" {...register("rnc")} placeholder="Enter RNC" />
+              <Input id="rnc" {...register("rnc")} placeholder="Ingresa el RNC" />
               {errors.rnc && <p className="text-sm text-destructive">{errors.rnc.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Correo Electrónico</Label>
               <Input id="email" type="email" {...register("email")} placeholder="supplier@example.com" />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone_number">Phone</Label>
+              <Label htmlFor="phone_number">Teléfono</Label>
               <Input id="phone_number" {...register("phone_number")} placeholder="+1 (555) 123-4567" />
               {errors.phone_number && <p className="text-sm text-destructive">{errors.phone_number.message}</p>}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Textarea id="address" {...register("address")} placeholder="Enter full address" rows={3} />
+            <Label htmlFor="address">Dirección</Label>
+            <Textarea id="address" {...register("address")} placeholder="Ingresa la dirección completa" rows={3} />
             {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
           </div>
 
@@ -101,18 +101,18 @@ export function SupplierForm({ supplier, onSubmit, onCancel }: SupplierFormProps
               checked={watch("is_active")}
               onCheckedChange={(checked) => setValue("is_active", checked)}
             />
-            <Label htmlFor="is_active">Active Supplier</Label>
+            <Label htmlFor="is_active">Proveedor Activo</Label>
           </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end gap-4">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          Cancelar
         </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {supplier ? "Update Supplier" : "Create Supplier"}
+          {supplier ? "Actualizar Proveedor" : "Crear Proveedor"}
         </Button>
       </div>
     </form>

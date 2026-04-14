@@ -93,7 +93,7 @@ export function SalesOrdersTable() {
   return (
     <div className="space-y-4">
       <Input
-        placeholder="Search sales orders..."
+        placeholder="Buscar órdenes de venta..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="max-w-sm"
@@ -103,12 +103,12 @@ export function SalesOrdersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>SO Number</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Order Date</TableHead>
-              <TableHead>Expected Delivery</TableHead>
+              <TableHead>N° de Orden</TableHead>
+              <TableHead>Cliente</TableHead>
+              <TableHead>Fecha de Orden</TableHead>
+              <TableHead>Entrega Esperada</TableHead>
               <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Estado</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -116,7 +116,7 @@ export function SalesOrdersTable() {
             {filteredOrders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  No sales orders found.
+                  No se encontraron órdenes de venta.
                 </TableCell>
               </TableRow>
             ) : (
@@ -138,25 +138,25 @@ export function SalesOrdersTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                           <Link href={`/sales/orders/${order.id}`}>
                             <Eye className="mr-2 h-4 w-4" />
-                            View Details
+                            Ver Detalles
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Pencil className="mr-2 h-4 w-4" />
-                          Edit
+                          Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Truck className="mr-2 h-4 w-4" />
-                          Create Shipment
+                          Crear Envío
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Cancel Order
+                          Cancelar Orden
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

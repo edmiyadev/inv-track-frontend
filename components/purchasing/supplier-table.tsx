@@ -40,7 +40,7 @@ export function SupplierTable() {
   })
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this supplier?")) {
+    if (confirm("¿Estás seguro de que deseas eliminar este proveedor?")) {
       deleteMutation.mutate(id)
     }
   }
@@ -57,7 +57,7 @@ export function SupplierTable() {
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Input
-          placeholder="Search suppliers..."
+          placeholder="Buscar proveedores..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
@@ -68,11 +68,11 @@ export function SupplierTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Supplier Name</TableHead>
+              <TableHead>Nombre del Proveedor</TableHead>
               <TableHead>RNC</TableHead>
-              <TableHead>Contact Info</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Información de Contacto</TableHead>
+              <TableHead>Dirección</TableHead>
+              <TableHead>Estado</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -80,7 +80,7 @@ export function SupplierTable() {
             {suppliers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  No suppliers found.
+                  No se encontraron proveedores.
                 </TableCell>
               </TableRow>
             ) : (
@@ -109,7 +109,7 @@ export function SupplierTable() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={supplier.is_active ? "default" : "secondary"}>
-                      {supplier.is_active ? "Active" : "Inactive"}
+                      {supplier.is_active ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -121,11 +121,11 @@ export function SupplierTable() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
                           <Link href={`/purchasing/suppliers/${supplier.id}/edit`}>
                             <Pencil className="mr-2 h-4 w-4" />
-                            Edit
+                            Editar
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -134,7 +134,7 @@ export function SupplierTable() {
                           onClick={() => handleDelete(supplier.id)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          Eliminar
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

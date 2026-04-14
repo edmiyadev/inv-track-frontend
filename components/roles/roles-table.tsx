@@ -78,7 +78,7 @@ export function RolesTable() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search roles..."
+            placeholder="Buscar roles..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -90,11 +90,11 @@ export function RolesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Role Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead className="text-center">Users</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Nombre del Rol</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead className="text-center">Usuarios</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -116,7 +116,7 @@ export function RolesTable() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  {role.isSystem ? <Badge variant="secondary">System</Badge> : <Badge variant="outline">Custom</Badge>}
+                  {role.isSystem ? <Badge variant="secondary">Sistema</Badge> : <Badge variant="outline">Personalizado</Badge>}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -126,18 +126,18 @@ export function RolesTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Edit Role
+                        Editar Rol
                       </DropdownMenuItem>
                       {!role.isSystem && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Role
+                            Eliminar Rol
                           </DropdownMenuItem>
                         </>
                       )}

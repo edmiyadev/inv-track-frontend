@@ -124,19 +124,19 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-4">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            <p className="text-muted-foreground">Loading order...</p>
+            <p className="text-muted-foreground">Cargando orden...</p>
           </div>
         </div>
       ) : isError ? (
         <div className="space-y-6">
-          <PageHeader title="Purchase Order" description="View purchase order details" />
+          <PageHeader title="Orden de Compra" description="Ver detalles de la orden de compra" />
           <Alert variant="destructive">
-            <AlertDescription>{(error as Error).message || "Error loading order"}</AlertDescription>
+            <AlertDescription>{(error as Error).message || "Error al cargar la orden"}</AlertDescription>
           </Alert>
           <Button asChild variant="outline">
             <Link href="/purchasing">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Purchasing
+              Volver a Compras
             </Link>
           </Button>
         </div>
@@ -144,7 +144,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
       <div className="space-y-6">
         <PageHeader
           title={`PO-${order.id}`}
-          description={`Purchase order for ${order.supplier?.name || 'Unknown Supplier'}`}
+          description={`Orden de compra para ${order.supplier?.name || 'Proveedor desconocido'}`}
           actions={
             <div className="flex gap-2">
               <Button asChild variant="outline">
@@ -176,7 +176,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
                     <Button asChild>
                       <Link href={`/purchasing/orders/${resolvedParams.id}/edit`}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Edit
+                        Editar
                       </Link>
                     </Button>
                   </CanAccess>
@@ -239,17 +239,17 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Order Details</CardTitle>
+            <CardTitle>Detalles de la Orden</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Status</span>
+              <span className="text-muted-foreground">Estado</span>
               <Badge variant={order.status === "posted" ? "default" : order.status === "canceled" ? "destructive" : "secondary"}>
                 {order.status}
               </Badge>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Order Date</span>
+              <span className="text-muted-foreground">Fecha de Orden</span>
               <span>{orderDate ? format(orderDate, "PPP") : "Sin fecha"}</span>
             </div>
           </CardContent>
@@ -257,11 +257,11 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
 
         <Card>
           <CardHeader>
-            <CardTitle>Supplier Information</CardTitle>
+            <CardTitle>Información del Proveedor</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Name</span>
+              <span className="text-muted-foreground">Nombre</span>
               <span>{order.supplier?.name}</span>
             </div>
             <div className="flex justify-between border-b pb-2">
@@ -269,11 +269,11 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
               <span>{order.supplier?.email || "N/A"}</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Phone</span>
+              <span className="text-muted-foreground">Teléfono</span>
               <span>{order.supplier?.phone_number || "N/A"}</span>
             </div>
             <div className="flex justify-between border-b pb-2">
-              <span className="text-muted-foreground">Address</span>
+              <span className="text-muted-foreground">Dirección</span>
               <span>{order.supplier?.address || "N/A"}</span>
             </div>
           </CardContent>
@@ -282,17 +282,17 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
 
       <Card>
         <CardHeader>
-          <CardTitle>Order Items</CardTitle>
+          <CardTitle>Artículos de la Orden</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Product</TableHead>
+                <TableHead>Producto</TableHead>
                 <TableHead>SKU</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead className="text-right">Unit Price</TableHead>
-                <TableHead className="text-right">Tax</TableHead>
+                <TableHead className="text-right">Cantidad</TableHead>
+                <TableHead className="text-right">Precio Unitario</TableHead>
+                <TableHead className="text-right">Impuesto</TableHead>
                 <TableHead className="text-right">Subtotal</TableHead>
               </TableRow>
             </TableHeader>
@@ -335,7 +335,7 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
       {order.notes && (
         <Card>
           <CardHeader>
-            <CardTitle>Notes</CardTitle>
+            <CardTitle>Notas</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">{order.notes}</p>

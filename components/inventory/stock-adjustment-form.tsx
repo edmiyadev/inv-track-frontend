@@ -18,8 +18,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const formSchema = z.object({
   type: z.enum(["add", "remove", "adjust"]),
-  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
-  reason: z.string().min(1, "Reason is required"),
+  quantity: z.coerce.number().min(1, "La cantidad debe ser al menos 1"),
+  reason: z.string().min(1, "El motivo es obligatorio"),
 })
 
 type FormData = z.infer<typeof formSchema>

@@ -72,7 +72,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
       router.push("/purchasing")
     },
     onError: (err: any) => {
-      setError(err.message || "Failed to update purchase order")
+      setError(err.message || "Error al actualizar la orden de compra")
     },
   })
 
@@ -90,7 +90,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Loading data...</p>
+          <p className="text-muted-foreground">Cargando datos...</p>
         </div>
       </div>
     )
@@ -99,13 +99,13 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
   if (isError) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Edit Purchase Order" description="Update purchase order details" />
+        <PageHeader title="Editar Orden de Compra" description="Actualizar detalles de la orden de compra" />
         <Alert variant="destructive">
-          <AlertDescription>{(fetchError as Error).message || "Error loading order"}</AlertDescription>
+          <AlertDescription>{(fetchError as Error).message || "Error al cargar la orden"}</AlertDescription>
         </Alert>
         <Button asChild variant="outline">
           <Link href="/purchasing">
-            Back to Purchasing
+            Volver a Compras
           </Link>
         </Button>
       </div>
@@ -118,7 +118,7 @@ export default function EditPurchaseOrderPage({ params }: { params: Promise<{ id
   return (
     <ProtectedRoute action="edit" subject="Purchase" redirectTo="/unauthorized">
       <div className="space-y-6">
-        <PageHeader title={`Edit PO-${order?.id}`} description="Update purchase order details" />
+        <PageHeader title={`Editar PO-${order?.id}`} description="Actualizar detalles de la orden de compra" />
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
