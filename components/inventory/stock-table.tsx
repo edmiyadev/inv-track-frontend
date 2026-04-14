@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowUpDown, Loader2 } from "lucide-react"
 import {
   Dialog,
@@ -16,21 +17,34 @@ import {
 import { StockAdjustmentForm } from "./stock-adjustment-form"
 import { useQuery } from "@tanstack/react-query"
 import { inventoryApi } from "@/lib/api/inventory"
+import { warehousesApi } from "@/lib/api/warehouses"
 import { useAuthStore } from "@/lib/store/auth"
 import { Stock } from "@/lib/api/types"
 
 export function StockTable() {
   const { accessToken } = useAuthStore()
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>("all")
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null)
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
 
   const { data: stockResponse, isLoading, error } = useQuery({
-    queryKey: ["stocks"],
-    queryFn: () => inventoryApi.getAllStocks(accessToken!),
+    queryKey: ["stocks", selectedWarehouseId],
+    queryFn: () =>
+      inventoryApi.getAllStocks(
+        accessToken!,
+        selectedWarehouseId === "all" ? undefined : { warehouse_id: Number(selectedWarehouseId) }
+      ),
+    enabled: !!accessToken,
+  })
+
+  const { data: warehousesResponse, isLoading: isLoadingWarehouses } = useQuery({
+    queryKey: ["warehouses", "stock-filter"],
+    queryFn: () => warehousesApi.getAll(accessToken!, 1, 1000),
     enabled: !!accessToken,
   })
 
   const stocks = stockResponse?.data || []
+  const warehouses = warehousesResponse?.data.data || []
 
   const getStatus = (stock: Stock) => {
     if (stock.quantity === 0) return "out-of-stock"
@@ -77,6 +91,29 @@ export function StockTable() {
 
   return (
     <div className="rounded-lg border border-border bg-card">
+      <div className="border-b border-border p-4">
+        <div className="flex flex-col gap-2 sm:w-[280px]">
+          <p className="text-sm font-medium">Almacén</p>
+          <Select
+            value={selectedWarehouseId}
+            onValueChange={setSelectedWarehouseId}
+            disabled={isLoadingWarehouses}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar almacén" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los almacenes</SelectItem>
+              {warehouses.map((warehouse) => (
+                <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                  {warehouse.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
