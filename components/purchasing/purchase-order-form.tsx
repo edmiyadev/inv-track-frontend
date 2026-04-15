@@ -234,6 +234,7 @@ export function PurchaseOrderForm({ order, suppliers, products, warehouses, taxe
                       const product = products.find((p) => p.id === productId)
                       if (product) {
                         setValue(`items.${index}.unitPrice`, parseFloat(product.price))
+                        setValue(`items.${index}.taxId`, product.tax_id ?? 0, { shouldValidate: true })
                       }
                     }}
                   >
