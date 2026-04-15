@@ -22,18 +22,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 // Validation schema matching API structure
 const productFormSchema = z.object({
-  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "El nombre es demasiado largo"),
+  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(255, "El nombre es demasiado largo"),
   sku: z
     .string()
     .min(3, "El SKU debe tener al menos 3 caracteres")
-    .max(50, "El SKU es demasiado largo")
-    .regex(/^[A-Z0-9-]+$/, "El SKU solo puede contener letras mayúsculas, números y guiones"),
-  description: z.string().max(500, "La descripción es demasiado larga").optional().or(z.literal("")),
-  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "El precio debe ser un número válido con máximo 2 decimales"),
-  stock_quantity: z.coerce.number().int("El stock debe ser un número entero").min(0, "El stock no puede ser negativo"),
-  reorder_point: z.coerce.number().int("El punto de reorden debe ser un número entero").min(0, "El punto de reorden no puede ser negativo"),
-  product_category_id: z.string().optional(),
-  supplier_id: z.string().optional(),
+    .max(255, "El SKU es demasiado largo"),
+  description: z.string().max(1000, "La descripción es demasiado larga").optional().or(z.literal("")),
+  price: z.coerce.number().min(0, "El precio no puede ser negativo"),
+  product_category_id: z.string().min(1, "La categoría es requerida"),
   tax_id: z.string().optional(),
 })
 
@@ -45,10 +41,8 @@ const transformToApiData = (data: ProductFormData) => ({
   sku: data.sku,
   description: data.description || null,
   price: data.price,
-  stock_quantity: data.stock_quantity,
-  reorder_point: data.reorder_point,
-  product_category_id: data.product_category_id && data.product_category_id !== "" ? parseInt(data.product_category_id) : null,
-  supplier_id: data.supplier_id && data.supplier_id !== "" ? parseInt(data.supplier_id) : null,
+  product_category_id: parseInt(data.product_category_id),
+  tax_id: data.tax_id && data.tax_id !== "" ? parseInt(data.tax_id) : null,
 })
 
 interface ProductFormProps {
@@ -101,12 +95,17 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
       name: defaultValues.name,
       sku: defaultValues.sku,
       description: defaultValues.description || "",
-      price: defaultValues.price,
-      stock_quantity: defaultValues.stock_quantity,
-      reorder_point: defaultValues.reorder_point,
+      price: Number(defaultValues.price),
       product_category_id: defaultValues.product_category_id?.toString() || "",
-      supplier_id: defaultValues.supplier_id?.toString() || "",
-    } : undefined,
+      tax_id: defaultValues.tax_id?.toString() || "",
+    } : {
+      name: "",
+      sku: "",
+      description: "",
+      price: 0,
+      product_category_id: "",
+      tax_id: "",
+    },
   })
 
   const categoryId = watch("product_category_id")
@@ -166,26 +165,37 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
               <p className="text-xs text-muted-foreground">Usa solo letras mayúsculas, números y guiones</p>
             </div>
           </div>
+          <div className="grid gap-4 md:grid-cols-2">
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea id="description" placeholder="Ingresa la descripción del producto" rows={4} {...register("description")} />
-            {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+            <div className="space-y-2">
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea id="description" placeholder="Ingresa la descripción del producto" rows={4} {...register("description")} />
+              {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="price">
+                Precio <span className="text-destructive">*</span>
+              </Label>
+              <Input id="price" type="number" min={0} step="0.01" placeholder="0.00" {...register("price")} />
+              {errors.price && <p className="text-sm text-destructive">{errors.price.message}</p>}
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="product_category_id">Categoría</Label>
+              <Label htmlFor="product_category_id">
+                Categoría <span className="text-destructive">*</span>
+              </Label>
               <Select
-                value={categoryId || "none"}
-                onValueChange={(value) => setValue("product_category_id", value === "none" ? "" : value)}
+                value={categoryId || ""}
+                onValueChange={(value) => setValue("product_category_id", value)}
                 disabled={isLoadingCategories}
               >
                 <SelectTrigger id="product_category_id">
                   <SelectValue placeholder={isLoadingCategories ? "Cargando..." : "Selecciona una categoría"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin categoría</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
@@ -226,7 +236,7 @@ export function ProductForm({ mode, defaultValues, productId }: ProductFormProps
 
       <div className="flex justify-end gap-3">
         <Button type="button" variant="outline" disabled={isSubmitting} asChild>
-          <Link href= {`/products`}>
+          <Link href={`/products`}>
             Cancelar
           </Link>
         </Button>

@@ -129,6 +129,7 @@ export interface Product {
   stock_quantity: number
   reorder_point: number
   product_category_id: number | null
+  tax_id: number | null
   supplier_id: number | null
   created_at: string
   updated_at: string
@@ -192,10 +193,8 @@ export interface CreateProductData {
   name: string
   description: string | null
   price: string | number
-  stock_quantity: number
-  reorder_point: number
-  product_category_id: number | null
-  supplier_id: number | null
+  product_category_id: number
+  tax_id?: number | null
 }
 
 export interface UpdateProductData {
@@ -203,10 +202,8 @@ export interface UpdateProductData {
   name?: string
   description?: string | null
   price?: string | number
-  stock_quantity?: number
-  reorder_point?: number
-  product_category_id?: number | null
-  supplier_id?: number | null
+  product_category_id?: number
+  tax_id?: number | null
 }
 
 // Product Category Types
