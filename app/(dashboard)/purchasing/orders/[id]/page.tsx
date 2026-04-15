@@ -73,9 +73,11 @@ export default function PurchaseOrderDetailPage({ params }: { params: Promise<{ 
     try {
       setIsDeleting(true)
       await purchasingApi.deletePurchase(parseInt(resolvedParams.id), accessToken)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["purchases"] }),
+        queryClient.invalidateQueries({ queryKey: ["purchase", resolvedParams.id] }),
+      ])
       router.push('/purchasing')
-
-      router.refresh()
     } catch (err) {
       console.error('Error deleting purchase:', err)
       alert('Error al eliminar el pedido')
